@@ -1,10 +1,1563 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Web Lab</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI in Education Survey Explorer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body, #root { height: 100%; margin: 0; padding: 0; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #f8fafc; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
 </head>
 <body>
-  <h1>Welcome to my Web Lab</h1>
-  <p>This is where I test and showcase websites.</p>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+
+// ─── EMBEDDED CSV DATA ───────────────────────────────────────────────────────
+let _activeData = null;
+function getData() { return _activeData; }
+const EMBEDDED_DATA = [{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium-High","S2_Role":"Principal","S2_LearningArea":"Science","S2_Experience":"4-7","S2_AIUseFrequency":"Often","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"1","S3_3":"1","S3_4":"1","S3_5":"1","S3_6":"2","S3_7":"3","S3_8":"2","S3_9":"3","S3_10":"5","S4_1":"5","S4_2":"3","S4_3":"4","S4_4":"4","S4_5":"2","S5_1":"5","S5_2":"2","S5_3":"2","S5_4":"3","S5_5":"5","S5_6":"3","S5_7":"1","S5_8":"2","S5_9":"1","S5_10":"5","S5_11":"3","S5_12":"3","S5_13":"2","S6_1":"2","S6_2":"2","S6_3":"3","S6_4":"2","S6_5":"4","S6_6":"3","S6_7":"4","S6_8":"5","S6_9":"3","S7_1":"4","S7_2":"4","S7_3":"2","S7_4":"1","S7_5":"1","S8_1":"2","S8_2":"3","S8_3":"2","S8_4":"5","S8_5":"4","S8_6":"5","S8_7":"3"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"Primary general","S2_Experience":"25+","S2_AIUseFrequency":"Very often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Unsure","S2_Access":"Both","S2_Confidence":"Very high","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"2","S3_3":"1","S3_4":"1","S3_5":"1","S3_6":"4","S3_7":"1","S3_8":"2","S3_9":"3","S3_10":"3","S4_1":"5","S4_2":"5","S4_3":"2","S4_4":"5","S4_5":"5","S5_1":"5","S5_2":"1","S5_3":"4","S5_4":"4","S5_5":"4","S5_6":"1","S5_7":"1","S5_8":"4","S5_9":"5","S5_10":"4","S5_11":"4","S5_12":"2","S5_13":"5","S6_1":"3","S6_2":"4","S6_3":"1","S6_4":"3","S6_5":"5","S6_6":"1","S6_7":"2","S6_8":"4","S6_9":"3","S7_1":"4","S7_2":"1","S7_3":"3","S7_4":"1","S7_5":"3","S8_1":"3","S8_2":"2","S8_3":"1","S8_4":"4","S8_5":"3","S8_6":"3","S8_7":"5"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low","S2_Role":"Other","S2_LearningArea":"Health/PE","S2_Experience":"4-7","S2_AIUseFrequency":"Sometimes","S2_AIPD":"6+ sessions","S2_Voluntariness":"Optional","S2_Access":"Prefer not to say","S2_Confidence":"Low","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"5","S3_3":"3","S3_4":"5","S3_5":"2","S3_6":"3","S3_7":"2","S3_8":"5","S3_9":"1","S3_10":"1","S4_1":"5","S4_2":"4","S4_3":"2","S4_4":"2","S4_5":"5","S5_1":"5","S5_2":"2","S5_3":"1","S5_4":"5","S5_5":"3","S5_6":"2","S5_7":"5","S5_8":"3","S5_9":"5","S5_10":"5","S5_11":"5","S5_12":"3","S5_13":"4","S6_1":"2","S6_2":"3","S6_3":"1","S6_4":"3","S6_5":"4","S6_6":"3","S6_7":"5","S6_8":"4","S6_9":"2","S7_1":"5","S7_2":"3","S7_3":"2","S7_4":"5","S7_5":"2","S8_1":"5","S8_2":"4","S8_3":"3","S8_4":"1","S8_5":"4","S8_6":"4","S8_7":"4"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium","S2_Role":"Senior leader","S2_LearningArea":"Social sciences","S2_Experience":"0-3","S2_AIUseFrequency":"Daily","S2_AIPD":"6+ sessions","S2_Voluntariness":"Optional","S2_Access":"None","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"2","S3_3":"2","S3_4":"3","S3_5":"4","S3_6":"2","S3_7":"2","S3_8":"3","S3_9":"1","S3_10":"3","S4_1":"2","S4_2":"4","S4_3":"2","S4_4":"1","S4_5":"4","S5_1":"2","S5_2":"4","S5_3":"4","S5_4":"1","S5_5":"1","S5_6":"2","S5_7":"1","S5_8":"1","S5_9":"1","S5_10":"2","S5_11":"5","S5_12":"3","S5_13":"5","S6_1":"1","S6_2":"2","S6_3":"3","S6_4":"2","S6_5":"5","S6_6":"1","S6_7":"5","S6_8":"1","S6_9":"3","S7_1":"5","S7_2":"1","S7_3":"2","S7_4":"5","S7_5":"4","S8_1":"4","S8_2":"4","S8_3":"2","S8_4":"4","S8_5":"2","S8_6":"4","S8_7":"2"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Secondary","S2_SchoolGeography":"Remote","S2_SchoolSES":"High","S2_Role":"Principal","S2_LearningArea":"English","S2_Experience":"0-3","S2_AIUseFrequency":"Very often","S2_AIPD":"Unsure","S2_Voluntariness":"Self-directed","S2_Access":"Unsure","S2_Confidence":"Very low","S2_UsageStage":"Occasional use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"1","S3_3":"5","S3_4":"4","S3_5":"3","S3_6":"5","S3_7":"3","S3_8":"4","S3_9":"2","S3_10":"5","S4_1":"3","S4_2":"2","S4_3":"3","S4_4":"1","S4_5":"2","S5_1":"4","S5_2":"3","S5_3":"2","S5_4":"1","S5_5":"1","S5_6":"1","S5_7":"1","S5_8":"4","S5_9":"4","S5_10":"2","S5_11":"3","S5_12":"4","S5_13":"3","S6_1":"1","S6_2":"4","S6_3":"5","S6_4":"3","S6_5":"1","S6_6":"1","S6_7":"4","S6_8":"3","S6_9":"2","S7_1":"1","S7_2":"2","S7_3":"1","S7_4":"1","S7_5":"3","S8_1":"3","S8_2":"3","S8_3":"3","S8_4":"1","S8_5":"4","S8_6":"5","S8_7":"3"},{"S2_Age":"55-64","S2_Gender":"Prefer not to say","S2_Ethnicity":"Asian","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Urban","S2_SchoolSES":"High","S2_Role":"Middle leader","S2_LearningArea":"Social sciences","S2_Experience":"16-25","S2_AIUseFrequency":"Often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"School provided","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"5","S3_3":"3","S3_4":"5","S3_5":"2","S3_6":"5","S3_7":"2","S3_8":"5","S3_9":"5","S3_10":"1","S4_1":"5","S4_2":"3","S4_3":"2","S4_4":"5","S4_5":"4","S5_1":"5","S5_2":"1","S5_3":"2","S5_4":"2","S5_5":"2","S5_6":"2","S5_7":"3","S5_8":"2","S5_9":"2","S5_10":"3","S5_11":"1","S5_12":"4","S5_13":"2","S6_1":"4","S6_2":"1","S6_3":"2","S6_4":"4","S6_5":"1","S6_6":"2","S6_7":"3","S6_8":"3","S6_9":"2","S7_1":"3","S7_2":"2","S7_3":"4","S7_4":"2","S7_5":"5","S8_1":"4","S8_2":"4","S8_3":"1","S8_4":"2","S8_5":"5","S8_6":"1","S8_7":"2"},{"S2_Age":"35-44","S2_Gender":"Female","S2_Ethnicity":"Pasifika","S2_SchoolType":"Secondary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Other","S2_LearningArea":"Science","S2_Experience":"16-25","S2_AIUseFrequency":"Never","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Self-directed","S2_Access":"Unsure","S2_Confidence":"Low","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"2","S3_3":"2","S3_4":"5","S3_5":"1","S3_6":"4","S3_7":"3","S3_8":"4","S3_9":"1","S3_10":"4","S4_1":"3","S4_2":"1","S4_3":"3","S4_4":"5","S4_5":"4","S5_1":"3","S5_2":"3","S5_3":"5","S5_4":"2","S5_5":"4","S5_6":"4","S5_7":"3","S5_8":"3","S5_9":"3","S5_10":"2","S5_11":"4","S5_12":"2","S5_13":"2","S6_1":"1","S6_2":"3","S6_3":"4","S6_4":"5","S6_5":"5","S6_6":"2","S6_7":"5","S6_8":"5","S6_9":"3","S7_1":"3","S7_2":"5","S7_3":"3","S7_4":"2","S7_5":"5","S8_1":"1","S8_2":"3","S8_3":"3","S8_4":"4","S8_5":"3","S8_6":"5","S8_7":"2"},{"S2_Age":"65+","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"Languages","S2_Experience":"25+","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"School provided","S2_Confidence":"Very high","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"4","S3_3":"1","S3_4":"3","S3_5":"5","S3_6":"2","S3_7":"5","S3_8":"3","S3_9":"1","S3_10":"2","S4_1":"1","S4_2":"4","S4_3":"4","S4_4":"5","S4_5":"3","S5_1":"4","S5_2":"2","S5_3":"5","S5_4":"2","S5_5":"2","S5_6":"3","S5_7":"5","S5_8":"1","S5_9":"5","S5_10":"5","S5_11":"2","S5_12":"5","S5_13":"3","S6_1":"3","S6_2":"5","S6_3":"3","S6_4":"1","S6_5":"3","S6_6":"1","S6_7":"1","S6_8":"1","S6_9":"1","S7_1":"2","S7_2":"2","S7_3":"5","S7_4":"2","S7_5":"2","S8_1":"3","S8_2":"4","S8_3":"4","S8_4":"3","S8_5":"3","S8_6":"5","S8_7":"5"},{"S2_Age":"65+","S2_Gender":"Non-binary","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium","S2_Role":"Senior leader","S2_LearningArea":"Maths","S2_Experience":"16-25","S2_AIUseFrequency":"Daily","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Unsure","S2_Access":"Limited","S2_Confidence":"High","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"5","S3_2":"2","S3_3":"3","S3_4":"2","S3_5":"5","S3_6":"1","S3_7":"5","S3_8":"4","S3_9":"2","S3_10":"2","S4_1":"5","S4_2":"1","S4_3":"1","S4_4":"3","S4_5":"2","S5_1":"1","S5_2":"4","S5_3":"3","S5_4":"5","S5_5":"5","S5_6":"2","S5_7":"1","S5_8":"4","S5_9":"5","S5_10":"5","S5_11":"1","S5_12":"4","S5_13":"1","S6_1":"1","S6_2":"3","S6_3":"4","S6_4":"2","S6_5":"3","S6_6":"3","S6_7":"4","S6_8":"4","S6_9":"5","S7_1":"5","S7_2":"3","S7_3":"2","S7_4":"4","S7_5":"1","S8_1":"1","S8_2":"1","S8_3":"3","S8_4":"2","S8_5":"5","S8_6":"4","S8_7":"1"},{"S2_Age":"18-24","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Special","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low","S2_Role":"Middle leader","S2_LearningArea":"Science","S2_Experience":"8-15","S2_AIUseFrequency":"Often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Required","S2_Access":"Prefer not to say","S2_Confidence":"High","S2_UsageStage":"Integrated","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"2","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"5","S3_7":"1","S3_8":"2","S3_9":"1","S3_10":"3","S4_1":"2","S4_2":"3","S4_3":"5","S4_4":"4","S4_5":"5","S5_1":"4","S5_2":"1","S5_3":"2","S5_4":"4","S5_5":"3","S5_6":"3","S5_7":"5","S5_8":"3","S5_9":"1","S5_10":"3","S5_11":"4","S5_12":"1","S5_13":"1","S6_1":"5","S6_2":"3","S6_3":"3","S6_4":"2","S6_5":"2","S6_6":"2","S6_7":"2","S6_8":"5","S6_9":"1","S7_1":"3","S7_2":"5","S7_3":"4","S7_4":"3","S7_5":"5","S8_1":"3","S8_2":"1","S8_3":"3","S8_4":"4","S8_5":"5","S8_6":"1","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Low-Medium","S2_Role":"Senior leader","S2_LearningArea":"Science","S2_Experience":"0-3","S2_AIUseFrequency":"Never","S2_AIPD":"1 session","S2_Voluntariness":"Prefer not to say","S2_Access":"None","S2_Confidence":"Low","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"1","S3_3":"2","S3_4":"4","S3_5":"3","S3_6":"4","S3_7":"1","S3_8":"4","S3_9":"5","S3_10":"5","S4_1":"2","S4_2":"3","S4_3":"2","S4_4":"4","S4_5":"2","S5_1":"1","S5_2":"2","S5_3":"4","S5_4":"2","S5_5":"4","S5_6":"4","S5_7":"1","S5_8":"5","S5_9":"3","S5_10":"3","S5_11":"1","S5_12":"4","S5_13":"5","S6_1":"5","S6_2":"3","S6_3":"2","S6_4":"4","S6_5":"2","S6_6":"3","S6_7":"4","S6_8":"3","S6_9":"2","S7_1":"2","S7_2":"4","S7_3":"5","S7_4":"2","S7_5":"1","S8_1":"2","S8_2":"5","S8_3":"1","S8_4":"3","S8_5":"1","S8_6":"1","S8_7":"1"},{"S2_Age":"35-44","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"High","S2_Role":"Consultant","S2_LearningArea":"Maths","S2_Experience":"4-7","S2_AIUseFrequency":"Very often","S2_AIPD":"6+ sessions","S2_Voluntariness":"Optional","S2_Access":"Limited","S2_Confidence":"Low","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"4","S3_3":"2","S3_4":"5","S3_5":"5","S3_6":"5","S3_7":"2","S3_8":"4","S3_9":"3","S3_10":"1","S4_1":"2","S4_2":"2","S4_3":"3","S4_4":"3","S4_5":"2","S5_1":"4","S5_2":"2","S5_3":"4","S5_4":"2","S5_5":"4","S5_6":"2","S5_7":"3","S5_8":"3","S5_9":"5","S5_10":"4","S5_11":"4","S5_12":"2","S5_13":"3","S6_1":"2","S6_2":"1","S6_3":"4","S6_4":"3","S6_5":"1","S6_6":"3","S6_7":"3","S6_8":"2","S6_9":"1","S7_1":"3","S7_2":"2","S7_3":"2","S7_4":"5","S7_5":"1","S8_1":"2","S8_2":"3","S8_3":"5","S8_4":"3","S8_5":"4","S8_6":"5","S8_7":"3"},{"S2_Age":"35-44","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium","S2_Role":"Other","S2_LearningArea":"Maths","S2_Experience":"25+","S2_AIUseFrequency":"Sometimes","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Optional","S2_Access":"Personal tools","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"1","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"3","S3_7":"3","S3_8":"5","S3_9":"1","S3_10":"2","S4_1":"1","S4_2":"5","S4_3":"5","S4_4":"1","S4_5":"1","S5_1":"4","S5_2":"4","S5_3":"1","S5_4":"2","S5_5":"4","S5_6":"1","S5_7":"5","S5_8":"2","S5_9":"2","S5_10":"4","S5_11":"1","S5_12":"4","S5_13":"1","S6_1":"4","S6_2":"2","S6_3":"1","S6_4":"2","S6_5":"4","S6_6":"3","S6_7":"2","S6_8":"1","S6_9":"1","S7_1":"1","S7_2":"3","S7_3":"1","S7_4":"3","S7_5":"2","S8_1":"4","S8_2":"2","S8_3":"5","S8_4":"5","S8_5":"1","S8_6":"3","S8_7":"4"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Asian","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Senior leader","S2_LearningArea":"Health/PE","S2_Experience":"25+","S2_AIUseFrequency":"Rarely","S2_AIPD":"1 session","S2_Voluntariness":"Encouraged","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"2","S3_3":"5","S3_4":"3","S3_5":"1","S3_6":"5","S3_7":"3","S3_8":"1","S3_9":"5","S3_10":"3","S4_1":"1","S4_2":"3","S4_3":"1","S4_4":"1","S4_5":"3","S5_1":"4","S5_2":"5","S5_3":"5","S5_4":"5","S5_5":"3","S5_6":"4","S5_7":"2","S5_8":"1","S5_9":"4","S5_10":"3","S5_11":"4","S5_12":"3","S5_13":"2","S6_1":"4","S6_2":"3","S6_3":"2","S6_4":"1","S6_5":"2","S6_6":"3","S6_7":"3","S6_8":"3","S6_9":"2","S7_1":"1","S7_2":"5","S7_3":"3","S7_4":"5","S7_5":"4","S8_1":"3","S8_2":"3","S8_3":"3","S8_4":"4","S8_5":"1","S8_6":"2","S8_7":"2"},{"S2_Age":"35-44","S2_Gender":"Male","S2_Ethnicity":"Asian","S2_SchoolType":"Special","S2_SchoolGeography":"Other","S2_SchoolSES":"Low","S2_Role":"Support staff","S2_LearningArea":"Science","S2_Experience":"8-15","S2_AIUseFrequency":"Sometimes","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Encouraged","S2_Access":"Prefer not to say","S2_Confidence":"High","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"4","S3_3":"5","S3_4":"1","S3_5":"3","S3_6":"2","S3_7":"2","S3_8":"4","S3_9":"3","S3_10":"1","S4_1":"5","S4_2":"5","S4_3":"2","S4_4":"1","S4_5":"5","S5_1":"1","S5_2":"2","S5_3":"2","S5_4":"3","S5_5":"5","S5_6":"1","S5_7":"5","S5_8":"1","S5_9":"2","S5_10":"5","S5_11":"4","S5_12":"3","S5_13":"1","S6_1":"1","S6_2":"1","S6_3":"5","S6_4":"4","S6_5":"5","S6_6":"1","S6_7":"4","S6_8":"4","S6_9":"1","S7_1":"2","S7_2":"5","S7_3":"3","S7_4":"5","S7_5":"1","S8_1":"1","S8_2":"5","S8_3":"2","S8_4":"3","S8_5":"1","S8_6":"3","S8_7":"2"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Asian","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium-High","S2_Role":"Principal","S2_LearningArea":"Languages","S2_Experience":"4-7","S2_AIUseFrequency":"Very often","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"Both","S2_Confidence":"Moderate","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"4","S3_3":"4","S3_4":"1","S3_5":"4","S3_6":"1","S3_7":"5","S3_8":"4","S3_9":"3","S3_10":"5","S4_1":"3","S4_2":"5","S4_3":"5","S4_4":"1","S4_5":"1","S5_1":"3","S5_2":"4","S5_3":"4","S5_4":"1","S5_5":"1","S5_6":"2","S5_7":"1","S5_8":"1","S5_9":"2","S5_10":"5","S5_11":"2","S5_12":"2","S5_13":"5","S6_1":"2","S6_2":"3","S6_3":"3","S6_4":"2","S6_5":"1","S6_6":"5","S6_7":"3","S6_8":"5","S6_9":"3","S7_1":"2","S7_2":"2","S7_3":"2","S7_4":"4","S7_5":"3","S8_1":"2","S8_2":"2","S8_3":"1","S8_4":"3","S8_5":"3","S8_6":"3","S8_7":"1"},{"S2_Age":"25-34","S2_Gender":"Non-binary","S2_Ethnicity":"Pasifika","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"High","S2_Role":"Teacher","S2_LearningArea":"Languages","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"6+ sessions","S2_Voluntariness":"Encouraged","S2_Access":"Limited","S2_Confidence":"Very high","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"1","S3_3":"4","S3_4":"3","S3_5":"1","S3_6":"2","S3_7":"2","S3_8":"3","S3_9":"4","S3_10":"4","S4_1":"4","S4_2":"3","S4_3":"1","S4_4":"4","S4_5":"1","S5_1":"3","S5_2":"4","S5_3":"1","S5_4":"1","S5_5":"3","S5_6":"2","S5_7":"1","S5_8":"1","S5_9":"3","S5_10":"3","S5_11":"4","S5_12":"4","S5_13":"2","S6_1":"3","S6_2":"4","S6_3":"3","S6_4":"3","S6_5":"4","S6_6":"1","S6_7":"1","S6_8":"2","S6_9":"1","S7_1":"5","S7_2":"4","S7_3":"5","S7_4":"3","S7_5":"3","S8_1":"1","S8_2":"4","S8_3":"1","S8_4":"5","S8_5":"3","S8_6":"5","S8_7":"2"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Low-Medium","S2_Role":"Principal","S2_LearningArea":"Languages","S2_Experience":"0-3","S2_AIUseFrequency":"Sometimes","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Encouraged","S2_Access":"Personal tools","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"5","S3_2":"3","S3_3":"5","S3_4":"5","S3_5":"4","S3_6":"3","S3_7":"3","S3_8":"2","S3_9":"4","S3_10":"2","S4_1":"4","S4_2":"3","S4_3":"5","S4_4":"1","S4_5":"5","S5_1":"5","S5_2":"5","S5_3":"4","S5_4":"5","S5_5":"1","S5_6":"4","S5_7":"3","S5_8":"5","S5_9":"3","S5_10":"1","S5_11":"3","S5_12":"4","S5_13":"2","S6_1":"5","S6_2":"3","S6_3":"2","S6_4":"1","S6_5":"4","S6_6":"2","S6_7":"1","S6_8":"1","S6_9":"1","S7_1":"5","S7_2":"4","S7_3":"3","S7_4":"1","S7_5":"4","S8_1":"3","S8_2":"2","S8_3":"4","S8_4":"4","S8_5":"3","S8_6":"1","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Female","S2_Ethnicity":"Asian","S2_SchoolType":"Secondary","S2_SchoolGeography":"Other","S2_SchoolSES":"High","S2_Role":"Other","S2_LearningArea":"Social sciences","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Optional","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"5","S3_2":"2","S3_3":"3","S3_4":"3","S3_5":"3","S3_6":"5","S3_7":"2","S3_8":"3","S3_9":"5","S3_10":"2","S4_1":"1","S4_2":"4","S4_3":"5","S4_4":"4","S4_5":"2","S5_1":"5","S5_2":"3","S5_3":"2","S5_4":"3","S5_5":"3","S5_6":"4","S5_7":"4","S5_8":"3","S5_9":"2","S5_10":"3","S5_11":"3","S5_12":"5","S5_13":"3","S6_1":"3","S6_2":"3","S6_3":"3","S6_4":"2","S6_5":"4","S6_6":"2","S6_7":"2","S6_8":"2","S6_9":"1","S7_1":"4","S7_2":"2","S7_3":"4","S7_4":"5","S7_5":"2","S8_1":"1","S8_2":"3","S8_3":"5","S8_4":"2","S8_5":"1","S8_6":"3","S8_7":"5"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Composite","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Senior leader","S2_LearningArea":"Languages","S2_Experience":"4-7","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Unsure","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"2","S3_3":"4","S3_4":"1","S3_5":"2","S3_6":"3","S3_7":"2","S3_8":"2","S3_9":"1","S3_10":"1","S4_1":"1","S4_2":"2","S4_3":"5","S4_4":"4","S4_5":"4","S5_1":"1","S5_2":"2","S5_3":"2","S5_4":"5","S5_5":"4","S5_6":"1","S5_7":"5","S5_8":"3","S5_9":"2","S5_10":"4","S5_11":"2","S5_12":"4","S5_13":"5","S6_1":"1","S6_2":"5","S6_3":"5","S6_4":"2","S6_5":"1","S6_6":"2","S6_7":"3","S6_8":"1","S6_9":"4","S7_1":"5","S7_2":"2","S7_3":"4","S7_4":"3","S7_5":"4","S8_1":"5","S8_2":"5","S8_3":"4","S8_4":"4","S8_5":"3","S8_6":"5","S8_7":"5"},{"S2_Age":"25-34","S2_Gender":"Male","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Special","S2_SchoolGeography":"Urban","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"Primary general","S2_Experience":"25+","S2_AIUseFrequency":"Often","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Required","S2_Access":"Unsure","S2_Confidence":"Low","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"2","S3_3":"3","S3_4":"1","S3_5":"1","S3_6":"4","S3_7":"1","S3_8":"4","S3_9":"3","S3_10":"4","S4_1":"4","S4_2":"5","S4_3":"3","S4_4":"1","S4_5":"2","S5_1":"3","S5_2":"5","S5_3":"3","S5_4":"2","S5_5":"1","S5_6":"5","S5_7":"4","S5_8":"4","S5_9":"3","S5_10":"2","S5_11":"2","S5_12":"3","S5_13":"4","S6_1":"2","S6_2":"3","S6_3":"5","S6_4":"5","S6_5":"4","S6_6":"3","S6_7":"4","S6_8":"3","S6_9":"1","S7_1":"3","S7_2":"4","S7_3":"3","S7_4":"3","S7_5":"4","S8_1":"1","S8_2":"3","S8_3":"2","S8_4":"3","S8_5":"1","S8_6":"1","S8_7":"4"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Māori","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low","S2_Role":"Principal","S2_LearningArea":"Primary general","S2_Experience":"25+","S2_AIUseFrequency":"Daily","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Personal tools","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"5","S3_3":"3","S3_4":"1","S3_5":"4","S3_6":"2","S3_7":"5","S3_8":"1","S3_9":"3","S3_10":"1","S4_1":"3","S4_2":"5","S4_3":"3","S4_4":"4","S4_5":"3","S5_1":"3","S5_2":"4","S5_3":"4","S5_4":"4","S5_5":"2","S5_6":"3","S5_7":"3","S5_8":"1","S5_9":"2","S5_10":"1","S5_11":"1","S5_12":"2","S5_13":"5","S6_1":"4","S6_2":"1","S6_3":"1","S6_4":"5","S6_5":"1","S6_6":"2","S6_7":"2","S6_8":"5","S6_9":"4","S7_1":"4","S7_2":"2","S7_3":"2","S7_4":"4","S7_5":"3","S8_1":"5","S8_2":"5","S8_3":"5","S8_4":"2","S8_5":"4","S8_6":"4","S8_7":"4"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Asian","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Other","S2_LearningArea":"Other","S2_Experience":"4-7","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Unsure","S2_Voluntariness":"Required","S2_Access":"Both","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"3","S3_3":"4","S3_4":"4","S3_5":"1","S3_6":"4","S3_7":"1","S3_8":"3","S3_9":"3","S3_10":"4","S4_1":"5","S4_2":"4","S4_3":"1","S4_4":"2","S4_5":"4","S5_1":"2","S5_2":"3","S5_3":"4","S5_4":"4","S5_5":"2","S5_6":"2","S5_7":"3","S5_8":"4","S5_9":"3","S5_10":"1","S5_11":"3","S5_12":"3","S5_13":"4","S6_1":"3","S6_2":"4","S6_3":"4","S6_4":"3","S6_5":"1","S6_6":"5","S6_7":"5","S6_8":"1","S6_9":"1","S7_1":"1","S7_2":"1","S7_3":"3","S7_4":"4","S7_5":"4","S8_1":"1","S8_2":"2","S8_3":"1","S8_4":"4","S8_5":"1","S8_6":"1","S8_7":"2"},{"S2_Age":"65+","S2_Gender":"Prefer not to say","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Low","S2_Role":"Principal","S2_LearningArea":"Primary general","S2_Experience":"16-25","S2_AIUseFrequency":"Often","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Unsure","S2_Access":"None","S2_Confidence":"Very high","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"5","S3_2":"4","S3_3":"1","S3_4":"5","S3_5":"2","S3_6":"1","S3_7":"5","S3_8":"5","S3_9":"3","S3_10":"5","S4_1":"2","S4_2":"3","S4_3":"1","S4_4":"5","S4_5":"3","S5_1":"1","S5_2":"5","S5_3":"4","S5_4":"4","S5_5":"1","S5_6":"5","S5_7":"3","S5_8":"4","S5_9":"5","S5_10":"2","S5_11":"1","S5_12":"1","S5_13":"2","S6_1":"5","S6_2":"2","S6_3":"3","S6_4":"3","S6_5":"1","S6_6":"5","S6_7":"3","S6_8":"1","S6_9":"4","S7_1":"3","S7_2":"2","S7_3":"2","S7_4":"2","S7_5":"4","S8_1":"2","S8_2":"3","S8_3":"3","S8_4":"5","S8_5":"1","S8_6":"3","S8_7":"1"},{"S2_Age":"65+","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Other","S2_SchoolSES":"Low","S2_Role":"Senior leader","S2_LearningArea":"Primary general","S2_Experience":"8-15","S2_AIUseFrequency":"Very often","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Both","S2_Confidence":"Low","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"3","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"2","S3_7":"1","S3_8":"5","S3_9":"2","S3_10":"4","S4_1":"5","S4_2":"2","S4_3":"1","S4_4":"4","S4_5":"5","S5_1":"4","S5_2":"3","S5_3":"1","S5_4":"3","S5_5":"4","S5_6":"1","S5_7":"1","S5_8":"5","S5_9":"4","S5_10":"2","S5_11":"1","S5_12":"4","S5_13":"5","S6_1":"4","S6_2":"5","S6_3":"4","S6_4":"5","S6_5":"4","S6_6":"5","S6_7":"3","S6_8":"1","S6_9":"2","S7_1":"5","S7_2":"3","S7_3":"3","S7_4":"4","S7_5":"5","S8_1":"4","S8_2":"2","S8_3":"1","S8_4":"1","S8_5":"1","S8_6":"1","S8_7":"2"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Principal","S2_LearningArea":"Other","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Encouraged","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"1","S3_3":"3","S3_4":"5","S3_5":"2","S3_6":"2","S3_7":"2","S3_8":"2","S3_9":"3","S3_10":"5","S4_1":"3","S4_2":"2","S4_3":"5","S4_4":"1","S4_5":"1","S5_1":"1","S5_2":"5","S5_3":"2","S5_4":"2","S5_5":"4","S5_6":"1","S5_7":"1","S5_8":"1","S5_9":"5","S5_10":"2","S5_11":"5","S5_12":"4","S5_13":"4","S6_1":"5","S6_2":"2","S6_3":"1","S6_4":"3","S6_5":"4","S6_6":"3","S6_7":"3","S6_8":"1","S6_9":"5","S7_1":"3","S7_2":"3","S7_3":"4","S7_4":"4","S7_5":"1","S8_1":"1","S8_2":"3","S8_3":"3","S8_4":"3","S8_5":"4","S8_6":"2","S8_7":"5"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Pasifika","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium-High","S2_Role":"Middle leader","S2_LearningArea":"Social sciences","S2_Experience":"0-3","S2_AIUseFrequency":"Sometimes","S2_AIPD":"6+ sessions","S2_Voluntariness":"Unsure","S2_Access":"None","S2_Confidence":"Moderate","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"3","S3_3":"4","S3_4":"5","S3_5":"2","S3_6":"5","S3_7":"3","S3_8":"2","S3_9":"1","S3_10":"5","S4_1":"3","S4_2":"1","S4_3":"5","S4_4":"5","S4_5":"1","S5_1":"2","S5_2":"1","S5_3":"2","S5_4":"3","S5_5":"4","S5_6":"2","S5_7":"2","S5_8":"3","S5_9":"5","S5_10":"5","S5_11":"5","S5_12":"5","S5_13":"1","S6_1":"4","S6_2":"5","S6_3":"2","S6_4":"3","S6_5":"5","S6_6":"5","S6_7":"5","S6_8":"1","S6_9":"1","S7_1":"5","S7_2":"5","S7_3":"1","S7_4":"3","S7_5":"3","S8_1":"4","S8_2":"1","S8_3":"5","S8_4":"5","S8_5":"1","S8_6":"2","S8_7":"2"},{"S2_Age":"25-34","S2_Gender":"Male","S2_Ethnicity":"Pasifika","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low-Medium","S2_Role":"Other","S2_LearningArea":"Special education","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"None","S2_Voluntariness":"Prefer not to say","S2_Access":"Personal tools","S2_Confidence":"Very low","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"1","S3_3":"3","S3_4":"3","S3_5":"1","S3_6":"5","S3_7":"5","S3_8":"4","S3_9":"1","S3_10":"5","S4_1":"1","S4_2":"4","S4_3":"3","S4_4":"2","S4_5":"2","S5_1":"5","S5_2":"1","S5_3":"2","S5_4":"3","S5_5":"4","S5_6":"3","S5_7":"1","S5_8":"5","S5_9":"4","S5_10":"1","S5_11":"4","S5_12":"5","S5_13":"5","S6_1":"2","S6_2":"5","S6_3":"1","S6_4":"2","S6_5":"5","S6_6":"1","S6_7":"5","S6_8":"3","S6_9":"3","S7_1":"1","S7_2":"4","S7_3":"5","S7_4":"5","S7_5":"5","S8_1":"2","S8_2":"3","S8_3":"1","S8_4":"1","S8_5":"5","S8_6":"3","S8_7":"5"},{"S2_Age":"45-54","S2_Gender":"Female","S2_Ethnicity":"Other","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Other","S2_SchoolSES":"High","S2_Role":"Teacher","S2_LearningArea":"Special education","S2_Experience":"25+","S2_AIUseFrequency":"Rarely","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"Unsure","S2_Confidence":"High","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"4","S3_2":"3","S3_3":"1","S3_4":"4","S3_5":"2","S3_6":"5","S3_7":"4","S3_8":"4","S3_9":"3","S3_10":"1","S4_1":"2","S4_2":"3","S4_3":"1","S4_4":"5","S4_5":"3","S5_1":"4","S5_2":"3","S5_3":"2","S5_4":"5","S5_5":"3","S5_6":"4","S5_7":"1","S5_8":"4","S5_9":"1","S5_10":"1","S5_11":"3","S5_12":"2","S5_13":"1","S6_1":"2","S6_2":"4","S6_3":"1","S6_4":"1","S6_5":"1","S6_6":"3","S6_7":"1","S6_8":"5","S6_9":"5","S7_1":"2","S7_2":"3","S7_3":"2","S7_4":"4","S7_5":"2","S8_1":"4","S8_2":"1","S8_3":"5","S8_4":"2","S8_5":"4","S8_6":"5","S8_7":"5"},{"S2_Age":"25-34","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium","S2_Role":"Teacher","S2_LearningArea":"Science","S2_Experience":"25+","S2_AIUseFrequency":"Never","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Encouraged","S2_Access":"Personal tools","S2_Confidence":"Very low","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"3","S3_3":"1","S3_4":"4","S3_5":"2","S3_6":"4","S3_7":"4","S3_8":"5","S3_9":"5","S3_10":"4","S4_1":"2","S4_2":"3","S4_3":"3","S4_4":"4","S4_5":"2","S5_1":"4","S5_2":"1","S5_3":"4","S5_4":"2","S5_5":"4","S5_6":"2","S5_7":"4","S5_8":"4","S5_9":"5","S5_10":"2","S5_11":"4","S5_12":"4","S5_13":"1","S6_1":"5","S6_2":"1","S6_3":"5","S6_4":"3","S6_5":"3","S6_6":"4","S6_7":"1","S6_8":"4","S6_9":"3","S7_1":"2","S7_2":"3","S7_3":"2","S7_4":"5","S7_5":"2","S8_1":"4","S8_2":"2","S8_3":"2","S8_4":"5","S8_5":"2","S8_6":"2","S8_7":"4"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Other","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low","S2_Role":"Other","S2_LearningArea":"Languages","S2_Experience":"0-3","S2_AIUseFrequency":"Very often","S2_AIPD":"Unsure","S2_Voluntariness":"Prefer not to say","S2_Access":"Prefer not to say","S2_Confidence":"Moderate","S2_UsageStage":"Occasional use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"4","S3_3":"1","S3_4":"3","S3_5":"1","S3_6":"3","S3_7":"1","S3_8":"3","S3_9":"5","S3_10":"4","S4_1":"2","S4_2":"5","S4_3":"4","S4_4":"3","S4_5":"3","S5_1":"1","S5_2":"3","S5_3":"1","S5_4":"2","S5_5":"2","S5_6":"5","S5_7":"2","S5_8":"3","S5_9":"5","S5_10":"5","S5_11":"4","S5_12":"3","S5_13":"2","S6_1":"1","S6_2":"3","S6_3":"3","S6_4":"4","S6_5":"5","S6_6":"3","S6_7":"4","S6_8":"3","S6_9":"5","S7_1":"1","S7_2":"5","S7_3":"5","S7_4":"4","S7_5":"4","S8_1":"1","S8_2":"4","S8_3":"4","S8_4":"3","S8_5":"4","S8_6":"4","S8_7":"2"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Other","S2_SchoolType":"Primary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Middle leader","S2_LearningArea":"Technology","S2_Experience":"16-25","S2_AIUseFrequency":"Rarely","S2_AIPD":"6+ sessions","S2_Voluntariness":"Unsure","S2_Access":"Limited","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"3","S3_3":"1","S3_4":"1","S3_5":"4","S3_6":"2","S3_7":"2","S3_8":"3","S3_9":"4","S3_10":"2","S4_1":"4","S4_2":"4","S4_3":"4","S4_4":"2","S4_5":"4","S5_1":"3","S5_2":"5","S5_3":"1","S5_4":"1","S5_5":"3","S5_6":"5","S5_7":"3","S5_8":"4","S5_9":"1","S5_10":"2","S5_11":"4","S5_12":"5","S5_13":"2","S6_1":"3","S6_2":"5","S6_3":"1","S6_4":"1","S6_5":"1","S6_6":"2","S6_7":"2","S6_8":"2","S6_9":"2","S7_1":"1","S7_2":"2","S7_3":"1","S7_4":"5","S7_5":"1","S8_1":"1","S8_2":"1","S8_3":"5","S8_4":"2","S8_5":"1","S8_6":"3","S8_7":"4"},{"S2_Age":"35-44","S2_Gender":"Male","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"Health/PE","S2_Experience":"0-3","S2_AIUseFrequency":"Very often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"Limited","S2_Confidence":"High","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"2","S3_3":"1","S3_4":"5","S3_5":"5","S3_6":"3","S3_7":"1","S3_8":"3","S3_9":"4","S3_10":"3","S4_1":"3","S4_2":"5","S4_3":"5","S4_4":"1","S4_5":"5","S5_1":"3","S5_2":"1","S5_3":"2","S5_4":"5","S5_5":"5","S5_6":"1","S5_7":"5","S5_8":"1","S5_9":"5","S5_10":"4","S5_11":"4","S5_12":"3","S5_13":"5","S6_1":"3","S6_2":"2","S6_3":"2","S6_4":"1","S6_5":"1","S6_6":"5","S6_7":"2","S6_8":"5","S6_9":"3","S7_1":"4","S7_2":"5","S7_3":"3","S7_4":"5","S7_5":"2","S8_1":"4","S8_2":"4","S8_3":"5","S8_4":"3","S8_5":"3","S8_6":"4","S8_7":"3"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Other","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low","S2_Role":"Consultant","S2_LearningArea":"Science","S2_Experience":"4-7","S2_AIUseFrequency":"Never","S2_AIPD":"Unsure","S2_Voluntariness":"Self-directed","S2_Access":"Limited","S2_Confidence":"Very low","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"4","S3_3":"3","S3_4":"4","S3_5":"4","S3_6":"1","S3_7":"4","S3_8":"2","S3_9":"1","S3_10":"4","S4_1":"2","S4_2":"4","S4_3":"2","S4_4":"3","S4_5":"3","S5_1":"2","S5_2":"5","S5_3":"5","S5_4":"1","S5_5":"3","S5_6":"2","S5_7":"1","S5_8":"2","S5_9":"4","S5_10":"3","S5_11":"5","S5_12":"4","S5_13":"2","S6_1":"5","S6_2":"2","S6_3":"2","S6_4":"2","S6_5":"5","S6_6":"3","S6_7":"1","S6_8":"3","S6_9":"2","S7_1":"1","S7_2":"5","S7_3":"5","S7_4":"2","S7_5":"5","S8_1":"2","S8_2":"4","S8_3":"3","S8_4":"5","S8_5":"3","S8_6":"3","S8_7":"2"},{"S2_Age":"35-44","S2_Gender":"Female","S2_Ethnicity":"Other","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Other","S2_LearningArea":"Social sciences","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Prefer not to say","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"4","S3_2":"4","S3_3":"1","S3_4":"3","S3_5":"2","S3_6":"2","S3_7":"4","S3_8":"1","S3_9":"4","S3_10":"3","S4_1":"5","S4_2":"5","S4_3":"3","S4_4":"5","S4_5":"4","S5_1":"2","S5_2":"4","S5_3":"2","S5_4":"4","S5_5":"2","S5_6":"4","S5_7":"5","S5_8":"3","S5_9":"2","S5_10":"1","S5_11":"4","S5_12":"4","S5_13":"3","S6_1":"1","S6_2":"1","S6_3":"5","S6_4":"5","S6_5":"1","S6_6":"1","S6_7":"1","S6_8":"2","S6_9":"3","S7_1":"4","S7_2":"2","S7_3":"3","S7_4":"5","S7_5":"1","S8_1":"3","S8_2":"2","S8_3":"4","S8_4":"2","S8_5":"3","S8_6":"3","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Female","S2_Ethnicity":"Pasifika","S2_SchoolType":"Primary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low-Medium","S2_Role":"Support staff","S2_LearningArea":"Languages","S2_Experience":"0-3","S2_AIUseFrequency":"Very often","S2_AIPD":"None","S2_Voluntariness":"Prefer not to say","S2_Access":"Unsure","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"1","S3_3":"1","S3_4":"1","S3_5":"3","S3_6":"1","S3_7":"1","S3_8":"2","S3_9":"4","S3_10":"5","S4_1":"1","S4_2":"2","S4_3":"5","S4_4":"1","S4_5":"4","S5_1":"4","S5_2":"4","S5_3":"5","S5_4":"1","S5_5":"3","S5_6":"3","S5_7":"2","S5_8":"4","S5_9":"1","S5_10":"4","S5_11":"5","S5_12":"3","S5_13":"4","S6_1":"5","S6_2":"4","S6_3":"5","S6_4":"4","S6_5":"5","S6_6":"4","S6_7":"2","S6_8":"3","S6_9":"3","S7_1":"4","S7_2":"5","S7_3":"5","S7_4":"5","S7_5":"5","S8_1":"5","S8_2":"1","S8_3":"1","S8_4":"1","S8_5":"3","S8_6":"2","S8_7":"5"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Special","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"Arts","S2_Experience":"16-25","S2_AIUseFrequency":"Daily","S2_AIPD":"1 session","S2_Voluntariness":"Encouraged","S2_Access":"School provided","S2_Confidence":"Very high","S2_UsageStage":"Occasional use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"4","S3_3":"4","S3_4":"1","S3_5":"5","S3_6":"1","S3_7":"1","S3_8":"5","S3_9":"5","S3_10":"2","S4_1":"2","S4_2":"1","S4_3":"4","S4_4":"2","S4_5":"1","S5_1":"2","S5_2":"1","S5_3":"5","S5_4":"5","S5_5":"4","S5_6":"3","S5_7":"2","S5_8":"5","S5_9":"2","S5_10":"3","S5_11":"1","S5_12":"3","S5_13":"2","S6_1":"2","S6_2":"4","S6_3":"1","S6_4":"2","S6_5":"2","S6_6":"3","S6_7":"5","S6_8":"1","S6_9":"5","S7_1":"3","S7_2":"3","S7_3":"5","S7_4":"2","S7_5":"4","S8_1":"1","S8_2":"1","S8_3":"2","S8_4":"4","S8_5":"2","S8_6":"1","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Prefer not to say","S2_Ethnicity":"Pasifika","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium","S2_Role":"Principal","S2_LearningArea":"Arts","S2_Experience":"16-25","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Optional","S2_Access":"Personal tools","S2_Confidence":"High","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"1","S3_3":"3","S3_4":"2","S3_5":"5","S3_6":"5","S3_7":"5","S3_8":"4","S3_9":"2","S3_10":"4","S4_1":"1","S4_2":"1","S4_3":"2","S4_4":"1","S4_5":"1","S5_1":"2","S5_2":"1","S5_3":"1","S5_4":"2","S5_5":"4","S5_6":"3","S5_7":"4","S5_8":"5","S5_9":"1","S5_10":"5","S5_11":"5","S5_12":"4","S5_13":"2","S6_1":"4","S6_2":"3","S6_3":"5","S6_4":"3","S6_5":"1","S6_6":"4","S6_7":"2","S6_8":"1","S6_9":"5","S7_1":"1","S7_2":"1","S7_3":"5","S7_4":"4","S7_5":"3","S8_1":"5","S8_2":"1","S8_3":"4","S8_4":"2","S8_5":"1","S8_6":"4","S8_7":"5"},{"S2_Age":"45-54","S2_Gender":"Prefer not to say","S2_Ethnicity":"Asian","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low","S2_Role":"Teacher","S2_LearningArea":"Maths","S2_Experience":"8-15","S2_AIUseFrequency":"Never","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Prefer not to say","S2_Access":"Both","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"2","S3_3":"2","S3_4":"2","S3_5":"1","S3_6":"5","S3_7":"2","S3_8":"2","S3_9":"1","S3_10":"1","S4_1":"1","S4_2":"1","S4_3":"1","S4_4":"5","S4_5":"5","S5_1":"3","S5_2":"3","S5_3":"5","S5_4":"3","S5_5":"3","S5_6":"5","S5_7":"2","S5_8":"3","S5_9":"1","S5_10":"3","S5_11":"3","S5_12":"5","S5_13":"4","S6_1":"4","S6_2":"2","S6_3":"4","S6_4":"5","S6_5":"2","S6_6":"5","S6_7":"2","S6_8":"1","S6_9":"5","S7_1":"5","S7_2":"5","S7_3":"4","S7_4":"5","S7_5":"2","S8_1":"2","S8_2":"5","S8_3":"3","S8_4":"3","S8_5":"4","S8_6":"4","S8_7":"4"},{"S2_Age":"65+","S2_Gender":"Non-binary","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Other","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium","S2_Role":"Support staff","S2_LearningArea":"Special education","S2_Experience":"8-15","S2_AIUseFrequency":"Daily","S2_AIPD":"Unsure","S2_Voluntariness":"Encouraged","S2_Access":"Prefer not to say","S2_Confidence":"High","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"2","S3_3":"3","S3_4":"1","S3_5":"2","S3_6":"3","S3_7":"1","S3_8":"3","S3_9":"3","S3_10":"1","S4_1":"1","S4_2":"1","S4_3":"2","S4_4":"3","S4_5":"3","S5_1":"1","S5_2":"3","S5_3":"2","S5_4":"2","S5_5":"1","S5_6":"2","S5_7":"4","S5_8":"1","S5_9":"5","S5_10":"3","S5_11":"4","S5_12":"3","S5_13":"5","S6_1":"2","S6_2":"5","S6_3":"1","S6_4":"1","S6_5":"3","S6_6":"1","S6_7":"3","S6_8":"2","S6_9":"1","S7_1":"3","S7_2":"5","S7_3":"3","S7_4":"1","S7_5":"5","S8_1":"5","S8_2":"1","S8_3":"1","S8_4":"1","S8_5":"5","S8_6":"1","S8_7":"2"},{"S2_Age":"65+","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Low-Medium","S2_Role":"Other","S2_LearningArea":"English","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"6+ sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"Unsure","S2_Confidence":"High","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"4","S3_3":"2","S3_4":"4","S3_5":"4","S3_6":"5","S3_7":"3","S3_8":"5","S3_9":"2","S3_10":"2","S4_1":"2","S4_2":"5","S4_3":"5","S4_4":"1","S4_5":"2","S5_1":"5","S5_2":"1","S5_3":"5","S5_4":"1","S5_5":"2","S5_6":"5","S5_7":"3","S5_8":"1","S5_9":"1","S5_10":"3","S5_11":"1","S5_12":"2","S5_13":"4","S6_1":"5","S6_2":"3","S6_3":"2","S6_4":"2","S6_5":"4","S6_6":"2","S6_7":"3","S6_8":"2","S6_9":"3","S7_1":"5","S7_2":"5","S7_3":"2","S7_4":"5","S7_5":"1","S8_1":"3","S8_2":"5","S8_3":"3","S8_4":"4","S8_5":"1","S8_6":"1","S8_7":"2"},{"S2_Age":"65+","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Primary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Low-Medium","S2_Role":"Support staff","S2_LearningArea":"English","S2_Experience":"25+","S2_AIUseFrequency":"Very often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Optional","S2_Access":"Prefer not to say","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"2","S3_3":"3","S3_4":"2","S3_5":"1","S3_6":"1","S3_7":"1","S3_8":"2","S3_9":"5","S3_10":"5","S4_1":"5","S4_2":"1","S4_3":"2","S4_4":"5","S4_5":"3","S5_1":"2","S5_2":"2","S5_3":"2","S5_4":"3","S5_5":"4","S5_6":"4","S5_7":"1","S5_8":"2","S5_9":"2","S5_10":"2","S5_11":"4","S5_12":"4","S5_13":"3","S6_1":"1","S6_2":"5","S6_3":"1","S6_4":"3","S6_5":"2","S6_6":"4","S6_7":"1","S6_8":"3","S6_9":"2","S7_1":"4","S7_2":"2","S7_3":"1","S7_4":"2","S7_5":"1","S8_1":"1","S8_2":"2","S8_3":"2","S8_4":"3","S8_5":"2","S8_6":"1","S8_7":"2"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Secondary","S2_SchoolGeography":"Other","S2_SchoolSES":"Low","S2_Role":"Teacher","S2_LearningArea":"Health/PE","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"None","S2_Voluntariness":"Self-directed","S2_Access":"Personal tools","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"5","S3_2":"2","S3_3":"3","S3_4":"3","S3_5":"2","S3_6":"4","S3_7":"5","S3_8":"5","S3_9":"2","S3_10":"2","S4_1":"2","S4_2":"5","S4_3":"1","S4_4":"1","S4_5":"3","S5_1":"5","S5_2":"5","S5_3":"2","S5_4":"1","S5_5":"5","S5_6":"4","S5_7":"2","S5_8":"2","S5_9":"1","S5_10":"5","S5_11":"1","S5_12":"3","S5_13":"5","S6_1":"5","S6_2":"3","S6_3":"3","S6_4":"2","S6_5":"3","S6_6":"1","S6_7":"3","S6_8":"1","S6_9":"5","S7_1":"3","S7_2":"2","S7_3":"1","S7_4":"2","S7_5":"1","S8_1":"5","S8_2":"4","S8_3":"5","S8_4":"2","S8_5":"2","S8_6":"5","S8_7":"3"},{"S2_Age":"35-44","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Teacher","S2_LearningArea":"Science","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"Unsure","S2_Voluntariness":"Required","S2_Access":"Limited","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"2","S3_3":"4","S3_4":"2","S3_5":"4","S3_6":"2","S3_7":"2","S3_8":"1","S3_9":"1","S3_10":"4","S4_1":"1","S4_2":"1","S4_3":"2","S4_4":"2","S4_5":"4","S5_1":"2","S5_2":"1","S5_3":"4","S5_4":"1","S5_5":"2","S5_6":"1","S5_7":"1","S5_8":"1","S5_9":"2","S5_10":"1","S5_11":"1","S5_12":"3","S5_13":"2","S6_1":"5","S6_2":"2","S6_3":"3","S6_4":"5","S6_5":"4","S6_6":"4","S6_7":"2","S6_8":"2","S6_9":"3","S7_1":"5","S7_2":"5","S7_3":"1","S7_4":"4","S7_5":"3","S8_1":"2","S8_2":"2","S8_3":"2","S8_4":"4","S8_5":"1","S8_6":"3","S8_7":"5"},{"S2_Age":"65+","S2_Gender":"Female","S2_Ethnicity":"Pasifika","S2_SchoolType":"Special","S2_SchoolGeography":"Other","S2_SchoolSES":"High","S2_Role":"Consultant","S2_LearningArea":"Social sciences","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"1 session","S2_Voluntariness":"Unsure","S2_Access":"Both","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"2","S3_3":"1","S3_4":"4","S3_5":"3","S3_6":"2","S3_7":"3","S3_8":"3","S3_9":"3","S3_10":"4","S4_1":"5","S4_2":"5","S4_3":"4","S4_4":"4","S4_5":"2","S5_1":"1","S5_2":"2","S5_3":"2","S5_4":"5","S5_5":"2","S5_6":"3","S5_7":"4","S5_8":"3","S5_9":"2","S5_10":"4","S5_11":"4","S5_12":"2","S5_13":"1","S6_1":"2","S6_2":"1","S6_3":"4","S6_4":"5","S6_5":"1","S6_6":"2","S6_7":"2","S6_8":"3","S6_9":"2","S7_1":"1","S7_2":"1","S7_3":"5","S7_4":"1","S7_5":"2","S8_1":"2","S8_2":"3","S8_3":"5","S8_4":"4","S8_5":"2","S8_6":"1","S8_7":"4"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium-High","S2_Role":"Consultant","S2_LearningArea":"Science","S2_Experience":"16-25","S2_AIUseFrequency":"Rarely","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"Unsure","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"4","S3_3":"4","S3_4":"4","S3_5":"3","S3_6":"4","S3_7":"1","S3_8":"1","S3_9":"1","S3_10":"3","S4_1":"2","S4_2":"2","S4_3":"2","S4_4":"4","S4_5":"2","S5_1":"3","S5_2":"5","S5_3":"2","S5_4":"5","S5_5":"1","S5_6":"1","S5_7":"1","S5_8":"2","S5_9":"4","S5_10":"4","S5_11":"4","S5_12":"5","S5_13":"3","S6_1":"1","S6_2":"4","S6_3":"2","S6_4":"2","S6_5":"4","S6_6":"1","S6_7":"1","S6_8":"1","S6_9":"3","S7_1":"1","S7_2":"4","S7_3":"3","S7_4":"5","S7_5":"1","S8_1":"4","S8_2":"3","S8_3":"3","S8_4":"5","S8_5":"2","S8_6":"1","S8_7":"5"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium","S2_Role":"Other","S2_LearningArea":"Other","S2_Experience":"16-25","S2_AIUseFrequency":"Daily","S2_AIPD":"Ongoing","S2_Voluntariness":"Required","S2_Access":"Both","S2_Confidence":"Very high","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"4","S3_3":"5","S3_4":"3","S3_5":"5","S3_6":"2","S3_7":"5","S3_8":"5","S3_9":"2","S3_10":"2","S4_1":"4","S4_2":"3","S4_3":"3","S4_4":"5","S4_5":"3","S5_1":"2","S5_2":"5","S5_3":"2","S5_4":"3","S5_5":"5","S5_6":"5","S5_7":"4","S5_8":"5","S5_9":"2","S5_10":"4","S5_11":"3","S5_12":"1","S5_13":"3","S6_1":"4","S6_2":"5","S6_3":"5","S6_4":"2","S6_5":"5","S6_6":"4","S6_7":"3","S6_8":"5","S6_9":"3","S7_1":"1","S7_2":"2","S7_3":"5","S7_4":"3","S7_5":"2","S8_1":"3","S8_2":"4","S8_3":"5","S8_4":"1","S8_5":"3","S8_6":"5","S8_7":"5"},{"S2_Age":"25-34","S2_Gender":"Male","S2_Ethnicity":"Asian","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"High","S2_Role":"Other","S2_LearningArea":"Languages","S2_Experience":"8-15","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Unsure","S2_Access":"Personal tools","S2_Confidence":"Very high","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"4","S3_3":"1","S3_4":"2","S3_5":"1","S3_6":"1","S3_7":"2","S3_8":"4","S3_9":"3","S3_10":"3","S4_1":"3","S4_2":"3","S4_3":"4","S4_4":"2","S4_5":"3","S5_1":"3","S5_2":"5","S5_3":"2","S5_4":"2","S5_5":"3","S5_6":"3","S5_7":"3","S5_8":"3","S5_9":"1","S5_10":"2","S5_11":"2","S5_12":"2","S5_13":"2","S6_1":"1","S6_2":"4","S6_3":"3","S6_4":"4","S6_5":"1","S6_6":"3","S6_7":"2","S6_8":"2","S6_9":"2","S7_1":"2","S7_2":"2","S7_3":"3","S7_4":"3","S7_5":"1","S8_1":"2","S8_2":"2","S8_3":"5","S8_4":"2","S8_5":"4","S8_6":"3","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Pasifika","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"High","S2_Role":"Middle leader","S2_LearningArea":"English","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Self-directed","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"4","S3_2":"1","S3_3":"1","S3_4":"4","S3_5":"1","S3_6":"5","S3_7":"1","S3_8":"1","S3_9":"2","S3_10":"1","S4_1":"1","S4_2":"2","S4_3":"4","S4_4":"5","S4_5":"4","S5_1":"3","S5_2":"3","S5_3":"1","S5_4":"2","S5_5":"5","S5_6":"5","S5_7":"2","S5_8":"2","S5_9":"3","S5_10":"3","S5_11":"2","S5_12":"5","S5_13":"5","S6_1":"5","S6_2":"3","S6_3":"2","S6_4":"3","S6_5":"4","S6_6":"4","S6_7":"3","S6_8":"2","S6_9":"4","S7_1":"2","S7_2":"5","S7_3":"2","S7_4":"2","S7_5":"1","S8_1":"3","S8_2":"2","S8_3":"4","S8_4":"2","S8_5":"3","S8_6":"3","S8_7":"4"},{"S2_Age":"35-44","S2_Gender":"Male","S2_Ethnicity":"Other","S2_SchoolType":"Other","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium","S2_Role":"Principal","S2_LearningArea":"Primary general","S2_Experience":"16-25","S2_AIUseFrequency":"Very often","S2_AIPD":"Ongoing","S2_Voluntariness":"Encouraged","S2_Access":"School provided","S2_Confidence":"Very low","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"5","S3_3":"3","S3_4":"5","S3_5":"3","S3_6":"1","S3_7":"3","S3_8":"1","S3_9":"5","S3_10":"1","S4_1":"1","S4_2":"3","S4_3":"5","S4_4":"2","S4_5":"1","S5_1":"1","S5_2":"4","S5_3":"3","S5_4":"5","S5_5":"2","S5_6":"1","S5_7":"4","S5_8":"3","S5_9":"1","S5_10":"5","S5_11":"3","S5_12":"1","S5_13":"4","S6_1":"2","S6_2":"1","S6_3":"1","S6_4":"2","S6_5":"5","S6_6":"4","S6_7":"2","S6_8":"1","S6_9":"2","S7_1":"4","S7_2":"5","S7_3":"1","S7_4":"4","S7_5":"1","S8_1":"4","S8_2":"2","S8_3":"4","S8_4":"3","S8_5":"2","S8_6":"3","S8_7":"1"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Secondary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Senior leader","S2_LearningArea":"Other","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"1 session","S2_Voluntariness":"Optional","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"4","S3_3":"4","S3_4":"3","S3_5":"2","S3_6":"1","S3_7":"3","S3_8":"3","S3_9":"2","S3_10":"1","S4_1":"4","S4_2":"4","S4_3":"1","S4_4":"4","S4_5":"4","S5_1":"5","S5_2":"3","S5_3":"2","S5_4":"3","S5_5":"2","S5_6":"2","S5_7":"4","S5_8":"3","S5_9":"1","S5_10":"4","S5_11":"3","S5_12":"2","S5_13":"2","S6_1":"1","S6_2":"2","S6_3":"4","S6_4":"5","S6_5":"2","S6_6":"1","S6_7":"1","S6_8":"2","S6_9":"1","S7_1":"2","S7_2":"4","S7_3":"4","S7_4":"4","S7_5":"5","S8_1":"5","S8_2":"5","S8_3":"5","S8_4":"1","S8_5":"4","S8_6":"1","S8_7":"2"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Secondary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Low-Medium","S2_Role":"Principal","S2_LearningArea":"Special education","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Self-directed","S2_Access":"None","S2_Confidence":"Very high","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"1","S3_3":"5","S3_4":"5","S3_5":"5","S3_6":"5","S3_7":"2","S3_8":"2","S3_9":"2","S3_10":"3","S4_1":"2","S4_2":"1","S4_3":"5","S4_4":"1","S4_5":"3","S5_1":"4","S5_2":"2","S5_3":"2","S5_4":"2","S5_5":"5","S5_6":"3","S5_7":"2","S5_8":"1","S5_9":"5","S5_10":"3","S5_11":"5","S5_12":"3","S5_13":"4","S6_1":"2","S6_2":"3","S6_3":"1","S6_4":"1","S6_5":"5","S6_6":"2","S6_7":"3","S6_8":"4","S6_9":"3","S7_1":"2","S7_2":"3","S7_3":"2","S7_4":"1","S7_5":"2","S8_1":"3","S8_2":"2","S8_3":"5","S8_4":"5","S8_5":"5","S8_6":"1","S8_7":"3"},{"S2_Age":"65+","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Composite","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Consultant","S2_LearningArea":"Languages","S2_Experience":"4-7","S2_AIUseFrequency":"Daily","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Self-directed","S2_Access":"Unsure","S2_Confidence":"High","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"5","S3_3":"4","S3_4":"1","S3_5":"5","S3_6":"4","S3_7":"4","S3_8":"1","S3_9":"1","S3_10":"2","S4_1":"4","S4_2":"2","S4_3":"5","S4_4":"2","S4_5":"1","S5_1":"1","S5_2":"3","S5_3":"3","S5_4":"2","S5_5":"2","S5_6":"4","S5_7":"3","S5_8":"1","S5_9":"3","S5_10":"5","S5_11":"4","S5_12":"3","S5_13":"2","S6_1":"3","S6_2":"2","S6_3":"4","S6_4":"4","S6_5":"5","S6_6":"4","S6_7":"5","S6_8":"2","S6_9":"1","S7_1":"1","S7_2":"2","S7_3":"5","S7_4":"1","S7_5":"2","S8_1":"1","S8_2":"1","S8_3":"2","S8_4":"2","S8_5":"5","S8_6":"5","S8_7":"5"},{"S2_Age":"55-64","S2_Gender":"Non-binary","S2_Ethnicity":"Other","S2_SchoolType":"Special","S2_SchoolGeography":"Urban","S2_SchoolSES":"Low-Medium","S2_Role":"Middle leader","S2_LearningArea":"Languages","S2_Experience":"16-25","S2_AIUseFrequency":"Sometimes","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Required","S2_Access":"Unsure","S2_Confidence":"Low","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"1","S3_3":"4","S3_4":"4","S3_5":"4","S3_6":"4","S3_7":"2","S3_8":"3","S3_9":"5","S3_10":"1","S4_1":"2","S4_2":"5","S4_3":"4","S4_4":"2","S4_5":"4","S5_1":"1","S5_2":"2","S5_3":"4","S5_4":"3","S5_5":"4","S5_6":"3","S5_7":"4","S5_8":"4","S5_9":"2","S5_10":"5","S5_11":"5","S5_12":"2","S5_13":"2","S6_1":"3","S6_2":"5","S6_3":"5","S6_4":"1","S6_5":"5","S6_6":"3","S6_7":"1","S6_8":"4","S6_9":"4","S7_1":"2","S7_2":"5","S7_3":"5","S7_4":"4","S7_5":"5","S8_1":"5","S8_2":"1","S8_3":"5","S8_4":"3","S8_5":"3","S8_6":"5","S8_7":"1"},{"S2_Age":"35-44","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low","S2_Role":"Senior leader","S2_LearningArea":"Social sciences","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"3","S3_3":"5","S3_4":"4","S3_5":"5","S3_6":"2","S3_7":"1","S3_8":"4","S3_9":"1","S3_10":"1","S4_1":"1","S4_2":"1","S4_3":"5","S4_4":"5","S4_5":"5","S5_1":"5","S5_2":"5","S5_3":"2","S5_4":"3","S5_5":"2","S5_6":"3","S5_7":"1","S5_8":"3","S5_9":"1","S5_10":"3","S5_11":"3","S5_12":"5","S5_13":"1","S6_1":"1","S6_2":"5","S6_3":"3","S6_4":"5","S6_5":"4","S6_6":"4","S6_7":"1","S6_8":"5","S6_9":"1","S7_1":"5","S7_2":"4","S7_3":"5","S7_4":"1","S7_5":"5","S8_1":"5","S8_2":"5","S8_3":"4","S8_4":"1","S8_5":"4","S8_6":"2","S8_7":"3"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Māori","S2_SchoolType":"Secondary","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium","S2_Role":"Support staff","S2_LearningArea":"Social sciences","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Optional","S2_Access":"Unsure","S2_Confidence":"High","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"1","S3_3":"3","S3_4":"2","S3_5":"4","S3_6":"2","S3_7":"1","S3_8":"2","S3_9":"3","S3_10":"4","S4_1":"1","S4_2":"4","S4_3":"3","S4_4":"2","S4_5":"3","S5_1":"3","S5_2":"3","S5_3":"5","S5_4":"2","S5_5":"4","S5_6":"1","S5_7":"1","S5_8":"3","S5_9":"5","S5_10":"4","S5_11":"2","S5_12":"1","S5_13":"2","S6_1":"1","S6_2":"1","S6_3":"4","S6_4":"2","S6_5":"4","S6_6":"2","S6_7":"5","S6_8":"2","S6_9":"3","S7_1":"5","S7_2":"3","S7_3":"3","S7_4":"2","S7_5":"5","S8_1":"2","S8_2":"2","S8_3":"5","S8_4":"2","S8_5":"2","S8_6":"2","S8_7":"3"},{"S2_Age":"18-24","S2_Gender":"Non-binary","S2_Ethnicity":"Asian","S2_SchoolType":"Other","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Principal","S2_LearningArea":"Science","S2_Experience":"25+","S2_AIUseFrequency":"Daily","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Encouraged","S2_Access":"Both","S2_Confidence":"High","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"2","S3_3":"4","S3_4":"3","S3_5":"2","S3_6":"2","S3_7":"3","S3_8":"3","S3_9":"3","S3_10":"3","S4_1":"1","S4_2":"5","S4_3":"4","S4_4":"3","S4_5":"4","S5_1":"4","S5_2":"1","S5_3":"1","S5_4":"1","S5_5":"2","S5_6":"4","S5_7":"1","S5_8":"5","S5_9":"3","S5_10":"2","S5_11":"1","S5_12":"1","S5_13":"3","S6_1":"2","S6_2":"5","S6_3":"4","S6_4":"1","S6_5":"5","S6_6":"1","S6_7":"4","S6_8":"5","S6_9":"1","S7_1":"2","S7_2":"3","S7_3":"4","S7_4":"2","S7_5":"2","S8_1":"5","S8_2":"3","S8_3":"2","S8_4":"3","S8_5":"5","S8_6":"5","S8_7":"3"},{"S2_Age":"55-64","S2_Gender":"Non-binary","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"High","S2_Role":"Teacher","S2_LearningArea":"Health/PE","S2_Experience":"8-15","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Ongoing","S2_Voluntariness":"Optional","S2_Access":"School provided","S2_Confidence":"Low","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"2","S3_3":"2","S3_4":"5","S3_5":"3","S3_6":"2","S3_7":"3","S3_8":"1","S3_9":"2","S3_10":"2","S4_1":"4","S4_2":"3","S4_3":"3","S4_4":"5","S4_5":"4","S5_1":"5","S5_2":"1","S5_3":"2","S5_4":"5","S5_5":"1","S5_6":"2","S5_7":"4","S5_8":"1","S5_9":"4","S5_10":"3","S5_11":"2","S5_12":"5","S5_13":"2","S6_1":"5","S6_2":"2","S6_3":"3","S6_4":"4","S6_5":"5","S6_6":"4","S6_7":"2","S6_8":"3","S6_9":"4","S7_1":"3","S7_2":"4","S7_3":"5","S7_4":"5","S7_5":"1","S8_1":"3","S8_2":"1","S8_3":"1","S8_4":"1","S8_5":"5","S8_6":"3","S8_7":"2"},{"S2_Age":"55-64","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Secondary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Support staff","S2_LearningArea":"Social sciences","S2_Experience":"4-7","S2_AIUseFrequency":"Very often","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Self-directed","S2_Access":"Limited","S2_Confidence":"Very low","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"5","S3_2":"1","S3_3":"4","S3_4":"4","S3_5":"5","S3_6":"1","S3_7":"5","S3_8":"5","S3_9":"1","S3_10":"2","S4_1":"1","S4_2":"2","S4_3":"4","S4_4":"5","S4_5":"1","S5_1":"4","S5_2":"1","S5_3":"2","S5_4":"4","S5_5":"1","S5_6":"1","S5_7":"3","S5_8":"5","S5_9":"5","S5_10":"5","S5_11":"3","S5_12":"4","S5_13":"1","S6_1":"2","S6_2":"3","S6_3":"2","S6_4":"4","S6_5":"2","S6_6":"1","S6_7":"2","S6_8":"5","S6_9":"2","S7_1":"3","S7_2":"3","S7_3":"1","S7_4":"2","S7_5":"1","S8_1":"3","S8_2":"5","S8_3":"5","S8_4":"1","S8_5":"3","S8_6":"3","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Composite","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Support staff","S2_LearningArea":"Primary general","S2_Experience":"16-25","S2_AIUseFrequency":"Never","S2_AIPD":"None","S2_Voluntariness":"Prefer not to say","S2_Access":"Prefer not to say","S2_Confidence":"Very high","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"4","S3_3":"1","S3_4":"3","S3_5":"1","S3_6":"3","S3_7":"5","S3_8":"3","S3_9":"2","S3_10":"5","S4_1":"4","S4_2":"3","S4_3":"2","S4_4":"1","S4_5":"1","S5_1":"4","S5_2":"4","S5_3":"1","S5_4":"3","S5_5":"5","S5_6":"1","S5_7":"2","S5_8":"3","S5_9":"3","S5_10":"3","S5_11":"2","S5_12":"1","S5_13":"1","S6_1":"1","S6_2":"2","S6_3":"5","S6_4":"2","S6_5":"5","S6_6":"3","S6_7":"1","S6_8":"2","S6_9":"2","S7_1":"2","S7_2":"2","S7_3":"1","S7_4":"1","S7_5":"5","S8_1":"5","S8_2":"5","S8_3":"1","S8_4":"2","S8_5":"3","S8_6":"5","S8_7":"2"},{"S2_Age":"45-54","S2_Gender":"Non-binary","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium-High","S2_Role":"Senior leader","S2_LearningArea":"Primary general","S2_Experience":"8-15","S2_AIUseFrequency":"Never","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Optional","S2_Access":"None","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"1","S3_3":"2","S3_4":"2","S3_5":"5","S3_6":"3","S3_7":"5","S3_8":"4","S3_9":"2","S3_10":"4","S4_1":"5","S4_2":"4","S4_3":"2","S4_4":"5","S4_5":"1","S5_1":"1","S5_2":"4","S5_3":"1","S5_4":"2","S5_5":"3","S5_6":"1","S5_7":"5","S5_8":"5","S5_9":"5","S5_10":"5","S5_11":"2","S5_12":"5","S5_13":"4","S6_1":"2","S6_2":"1","S6_3":"1","S6_4":"5","S6_5":"3","S6_6":"4","S6_7":"2","S6_8":"1","S6_9":"1","S7_1":"5","S7_2":"5","S7_3":"4","S7_4":"4","S7_5":"3","S8_1":"2","S8_2":"1","S8_3":"2","S8_4":"3","S8_5":"4","S8_6":"4","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"Arts","S2_Experience":"4-7","S2_AIUseFrequency":"Never","S2_AIPD":"Ongoing","S2_Voluntariness":"Self-directed","S2_Access":"None","S2_Confidence":"High","S2_UsageStage":"Integrated","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"3","S3_3":"2","S3_4":"2","S3_5":"5","S3_6":"2","S3_7":"5","S3_8":"1","S3_9":"3","S3_10":"4","S4_1":"5","S4_2":"1","S4_3":"5","S4_4":"4","S4_5":"4","S5_1":"1","S5_2":"1","S5_3":"3","S5_4":"1","S5_5":"1","S5_6":"3","S5_7":"2","S5_8":"5","S5_9":"3","S5_10":"1","S5_11":"5","S5_12":"5","S5_13":"4","S6_1":"4","S6_2":"2","S6_3":"5","S6_4":"1","S6_5":"2","S6_6":"2","S6_7":"1","S6_8":"4","S6_9":"5","S7_1":"5","S7_2":"5","S7_3":"3","S7_4":"4","S7_5":"5","S8_1":"1","S8_2":"2","S8_3":"3","S8_4":"4","S8_5":"5","S8_6":"5","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Composite","S2_SchoolGeography":"Urban","S2_SchoolSES":"Low","S2_Role":"Support staff","S2_LearningArea":"Health/PE","S2_Experience":"25+","S2_AIUseFrequency":"Very often","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Prefer not to say","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"4","S3_3":"4","S3_4":"1","S3_5":"2","S3_6":"1","S3_7":"1","S3_8":"1","S3_9":"5","S3_10":"5","S4_1":"2","S4_2":"4","S4_3":"4","S4_4":"3","S4_5":"3","S5_1":"4","S5_2":"5","S5_3":"4","S5_4":"1","S5_5":"4","S5_6":"2","S5_7":"3","S5_8":"4","S5_9":"5","S5_10":"1","S5_11":"4","S5_12":"1","S5_13":"1","S6_1":"5","S6_2":"2","S6_3":"4","S6_4":"4","S6_5":"3","S6_6":"4","S6_7":"3","S6_8":"4","S6_9":"5","S7_1":"3","S7_2":"5","S7_3":"5","S7_4":"4","S7_5":"5","S8_1":"3","S8_2":"5","S8_3":"5","S8_4":"4","S8_5":"2","S8_6":"5","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Female","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Other","S2_SchoolGeography":"Rural","S2_SchoolSES":"High","S2_Role":"Middle leader","S2_LearningArea":"Maths","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"Unsure","S2_Voluntariness":"Self-directed","S2_Access":"None","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"4","S3_2":"3","S3_3":"1","S3_4":"5","S3_5":"2","S3_6":"4","S3_7":"2","S3_8":"2","S3_9":"5","S3_10":"2","S4_1":"1","S4_2":"3","S4_3":"1","S4_4":"5","S4_5":"2","S5_1":"5","S5_2":"5","S5_3":"1","S5_4":"4","S5_5":"1","S5_6":"3","S5_7":"4","S5_8":"3","S5_9":"4","S5_10":"3","S5_11":"5","S5_12":"2","S5_13":"4","S6_1":"1","S6_2":"3","S6_3":"3","S6_4":"2","S6_5":"2","S6_6":"1","S6_7":"2","S6_8":"3","S6_9":"2","S7_1":"2","S7_2":"1","S7_3":"2","S7_4":"2","S7_5":"5","S8_1":"5","S8_2":"3","S8_3":"4","S8_4":"1","S8_5":"3","S8_6":"3","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium","S2_Role":"Teacher","S2_LearningArea":"English","S2_Experience":"0-3","S2_AIUseFrequency":"Sometimes","S2_AIPD":"1 session","S2_Voluntariness":"Optional","S2_Access":"Prefer not to say","S2_Confidence":"High","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"5","S3_2":"3","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"3","S3_7":"1","S3_8":"4","S3_9":"1","S3_10":"4","S4_1":"4","S4_2":"2","S4_3":"1","S4_4":"1","S4_5":"5","S5_1":"4","S5_2":"1","S5_3":"5","S5_4":"1","S5_5":"4","S5_6":"5","S5_7":"3","S5_8":"5","S5_9":"1","S5_10":"2","S5_11":"2","S5_12":"5","S5_13":"1","S6_1":"1","S6_2":"1","S6_3":"5","S6_4":"1","S6_5":"2","S6_6":"4","S6_7":"4","S6_8":"4","S6_9":"1","S7_1":"2","S7_2":"1","S7_3":"2","S7_4":"3","S7_5":"4","S8_1":"2","S8_2":"1","S8_3":"2","S8_4":"3","S8_5":"4","S8_6":"1","S8_7":"3"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Asian","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"High","S2_Role":"Teacher","S2_LearningArea":"Maths","S2_Experience":"4-7","S2_AIUseFrequency":"Very often","S2_AIPD":"None","S2_Voluntariness":"Prefer not to say","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"3","S3_3":"5","S3_4":"1","S3_5":"4","S3_6":"5","S3_7":"2","S3_8":"3","S3_9":"5","S3_10":"2","S4_1":"2","S4_2":"3","S4_3":"2","S4_4":"3","S4_5":"1","S5_1":"3","S5_2":"3","S5_3":"3","S5_4":"4","S5_5":"3","S5_6":"2","S5_7":"3","S5_8":"1","S5_9":"1","S5_10":"3","S5_11":"5","S5_12":"4","S5_13":"5","S6_1":"2","S6_2":"4","S6_3":"5","S6_4":"2","S6_5":"2","S6_6":"3","S6_7":"1","S6_8":"5","S6_9":"1","S7_1":"2","S7_2":"5","S7_3":"3","S7_4":"1","S7_5":"3","S8_1":"3","S8_2":"5","S8_3":"5","S8_4":"5","S8_5":"5","S8_6":"4","S8_7":"1"},{"S2_Age":"18-24","S2_Gender":"Non-binary","S2_Ethnicity":"Asian","S2_SchoolType":"Secondary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low","S2_Role":"Principal","S2_LearningArea":"Health/PE","S2_Experience":"25+","S2_AIUseFrequency":"Very often","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Personal tools","S2_Confidence":"High","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"3","S3_3":"5","S3_4":"2","S3_5":"2","S3_6":"1","S3_7":"1","S3_8":"2","S3_9":"5","S3_10":"3","S4_1":"2","S4_2":"1","S4_3":"4","S4_4":"1","S4_5":"5","S5_1":"5","S5_2":"5","S5_3":"3","S5_4":"3","S5_5":"1","S5_6":"3","S5_7":"4","S5_8":"4","S5_9":"2","S5_10":"2","S5_11":"2","S5_12":"4","S5_13":"1","S6_1":"4","S6_2":"5","S6_3":"3","S6_4":"5","S6_5":"5","S6_6":"2","S6_7":"4","S6_8":"1","S6_9":"4","S7_1":"3","S7_2":"4","S7_3":"4","S7_4":"1","S7_5":"5","S8_1":"3","S8_2":"3","S8_3":"3","S8_4":"1","S8_5":"3","S8_6":"2","S8_7":"2"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Asian","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"Other","S2_Experience":"8-15","S2_AIUseFrequency":"Never","S2_AIPD":"Ongoing","S2_Voluntariness":"Self-directed","S2_Access":"Prefer not to say","S2_Confidence":"Very high","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"2","S3_3":"5","S3_4":"5","S3_5":"1","S3_6":"3","S3_7":"2","S3_8":"1","S3_9":"5","S3_10":"3","S4_1":"4","S4_2":"3","S4_3":"4","S4_4":"1","S4_5":"1","S5_1":"4","S5_2":"3","S5_3":"4","S5_4":"3","S5_5":"2","S5_6":"5","S5_7":"5","S5_8":"4","S5_9":"4","S5_10":"4","S5_11":"5","S5_12":"5","S5_13":"4","S6_1":"2","S6_2":"2","S6_3":"2","S6_4":"2","S6_5":"2","S6_6":"2","S6_7":"2","S6_8":"2","S6_9":"3","S7_1":"2","S7_2":"3","S7_3":"5","S7_4":"2","S7_5":"1","S8_1":"1","S8_2":"3","S8_3":"4","S8_4":"5","S8_5":"1","S8_6":"1","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium","S2_Role":"Middle leader","S2_LearningArea":"Other","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Unsure","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"4","S3_3":"2","S3_4":"1","S3_5":"4","S3_6":"2","S3_7":"3","S3_8":"4","S3_9":"4","S3_10":"1","S4_1":"3","S4_2":"1","S4_3":"3","S4_4":"4","S4_5":"1","S5_1":"2","S5_2":"1","S5_3":"1","S5_4":"5","S5_5":"4","S5_6":"2","S5_7":"5","S5_8":"1","S5_9":"3","S5_10":"4","S5_11":"3","S5_12":"3","S5_13":"3","S6_1":"1","S6_2":"5","S6_3":"1","S6_4":"2","S6_5":"2","S6_6":"2","S6_7":"2","S6_8":"4","S6_9":"3","S7_1":"4","S7_2":"3","S7_3":"2","S7_4":"3","S7_5":"3","S8_1":"2","S8_2":"4","S8_3":"5","S8_4":"1","S8_5":"1","S8_6":"2","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium-High","S2_Role":"Other","S2_LearningArea":"Arts","S2_Experience":"8-15","S2_AIUseFrequency":"Daily","S2_AIPD":"Ongoing","S2_Voluntariness":"Self-directed","S2_Access":"School provided","S2_Confidence":"Very low","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"4","S3_3":"5","S3_4":"1","S3_5":"4","S3_6":"1","S3_7":"1","S3_8":"1","S3_9":"2","S3_10":"4","S4_1":"4","S4_2":"4","S4_3":"4","S4_4":"5","S4_5":"3","S5_1":"2","S5_2":"3","S5_3":"4","S5_4":"2","S5_5":"2","S5_6":"4","S5_7":"5","S5_8":"4","S5_9":"2","S5_10":"4","S5_11":"1","S5_12":"5","S5_13":"1","S6_1":"4","S6_2":"3","S6_3":"5","S6_4":"1","S6_5":"2","S6_6":"2","S6_7":"2","S6_8":"3","S6_9":"1","S7_1":"1","S7_2":"1","S7_3":"2","S7_4":"5","S7_5":"5","S8_1":"1","S8_2":"1","S8_3":"5","S8_4":"4","S8_5":"2","S8_6":"2","S8_7":"1"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Māori","S2_SchoolType":"Secondary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"Maths","S2_Experience":"25+","S2_AIUseFrequency":"Sometimes","S2_AIPD":"None","S2_Voluntariness":"Optional","S2_Access":"Prefer not to say","S2_Confidence":"Very high","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"5","S3_3":"3","S3_4":"4","S3_5":"5","S3_6":"4","S3_7":"3","S3_8":"3","S3_9":"4","S3_10":"5","S4_1":"5","S4_2":"2","S4_3":"4","S4_4":"3","S4_5":"2","S5_1":"3","S5_2":"1","S5_3":"1","S5_4":"1","S5_5":"3","S5_6":"2","S5_7":"2","S5_8":"5","S5_9":"3","S5_10":"3","S5_11":"4","S5_12":"5","S5_13":"2","S6_1":"3","S6_2":"3","S6_3":"2","S6_4":"2","S6_5":"2","S6_6":"3","S6_7":"2","S6_8":"5","S6_9":"3","S7_1":"3","S7_2":"2","S7_3":"1","S7_4":"3","S7_5":"1","S8_1":"2","S8_2":"3","S8_3":"3","S8_4":"2","S8_5":"1","S8_6":"2","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Female","S2_Ethnicity":"Asian","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Middle leader","S2_LearningArea":"Languages","S2_Experience":"8-15","S2_AIUseFrequency":"Sometimes","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Encouraged","S2_Access":"Unsure","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"3","S3_3":"1","S3_4":"3","S3_5":"4","S3_6":"4","S3_7":"3","S3_8":"5","S3_9":"2","S3_10":"2","S4_1":"2","S4_2":"2","S4_3":"4","S4_4":"2","S4_5":"3","S5_1":"4","S5_2":"3","S5_3":"1","S5_4":"1","S5_5":"4","S5_6":"3","S5_7":"1","S5_8":"4","S5_9":"5","S5_10":"1","S5_11":"5","S5_12":"1","S5_13":"3","S6_1":"1","S6_2":"5","S6_3":"2","S6_4":"5","S6_5":"1","S6_6":"3","S6_7":"2","S6_8":"2","S6_9":"5","S7_1":"3","S7_2":"4","S7_3":"5","S7_4":"1","S7_5":"5","S8_1":"1","S8_2":"1","S8_3":"3","S8_4":"1","S8_5":"5","S8_6":"2","S8_7":"4"},{"S2_Age":"35-44","S2_Gender":"Non-binary","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium-High","S2_Role":"Consultant","S2_LearningArea":"Primary general","S2_Experience":"0-3","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Optional","S2_Access":"Limited","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"2","S3_2":"3","S3_3":"5","S3_4":"3","S3_5":"4","S3_6":"5","S3_7":"1","S3_8":"4","S3_9":"3","S3_10":"3","S4_1":"5","S4_2":"2","S4_3":"4","S4_4":"3","S4_5":"1","S5_1":"5","S5_2":"4","S5_3":"5","S5_4":"4","S5_5":"4","S5_6":"1","S5_7":"5","S5_8":"5","S5_9":"4","S5_10":"5","S5_11":"4","S5_12":"3","S5_13":"3","S6_1":"5","S6_2":"3","S6_3":"4","S6_4":"2","S6_5":"3","S6_6":"1","S6_7":"5","S6_8":"4","S6_9":"3","S7_1":"3","S7_2":"4","S7_3":"5","S7_4":"1","S7_5":"3","S8_1":"1","S8_2":"5","S8_3":"5","S8_4":"2","S8_5":"4","S8_6":"3","S8_7":"5"},{"S2_Age":"35-44","S2_Gender":"Male","S2_Ethnicity":"Pasifika","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"Medium","S2_Role":"Teacher","S2_LearningArea":"Other","S2_Experience":"25+","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Unsure","S2_Voluntariness":"Unsure","S2_Access":"Prefer not to say","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"1","S3_3":"4","S3_4":"3","S3_5":"2","S3_6":"5","S3_7":"2","S3_8":"3","S3_9":"5","S3_10":"2","S4_1":"4","S4_2":"1","S4_3":"1","S4_4":"5","S4_5":"1","S5_1":"5","S5_2":"5","S5_3":"4","S5_4":"4","S5_5":"1","S5_6":"1","S5_7":"3","S5_8":"5","S5_9":"2","S5_10":"5","S5_11":"2","S5_12":"3","S5_13":"4","S6_1":"4","S6_2":"2","S6_3":"3","S6_4":"4","S6_5":"1","S6_6":"4","S6_7":"5","S6_8":"5","S6_9":"2","S7_1":"4","S7_2":"5","S7_3":"1","S7_4":"5","S7_5":"4","S8_1":"5","S8_2":"1","S8_3":"4","S8_4":"2","S8_5":"3","S8_6":"1","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Non-binary","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Composite","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low-Medium","S2_Role":"Consultant","S2_LearningArea":"Technology","S2_Experience":"16-25","S2_AIUseFrequency":"Very often","S2_AIPD":"None","S2_Voluntariness":"Encouraged","S2_Access":"Personal tools","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"5","S3_3":"3","S3_4":"2","S3_5":"3","S3_6":"5","S3_7":"4","S3_8":"3","S3_9":"1","S3_10":"3","S4_1":"3","S4_2":"5","S4_3":"5","S4_4":"5","S4_5":"1","S5_1":"1","S5_2":"2","S5_3":"4","S5_4":"4","S5_5":"5","S5_6":"2","S5_7":"4","S5_8":"5","S5_9":"4","S5_10":"1","S5_11":"3","S5_12":"2","S5_13":"4","S6_1":"5","S6_2":"1","S6_3":"4","S6_4":"1","S6_5":"4","S6_6":"3","S6_7":"3","S6_8":"4","S6_9":"2","S7_1":"2","S7_2":"2","S7_3":"1","S7_4":"1","S7_5":"2","S8_1":"3","S8_2":"4","S8_3":"5","S8_4":"2","S8_5":"4","S8_6":"4","S8_7":"4"},{"S2_Age":"65+","S2_Gender":"Prefer not to say","S2_Ethnicity":"Other","S2_SchoolType":"Special","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Support staff","S2_LearningArea":"Science","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"6+ sessions","S2_Voluntariness":"Encouraged","S2_Access":"Limited","S2_Confidence":"High","S2_UsageStage":"Occasional use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"1","S3_3":"4","S3_4":"4","S3_5":"4","S3_6":"4","S3_7":"4","S3_8":"3","S3_9":"4","S3_10":"2","S4_1":"5","S4_2":"4","S4_3":"4","S4_4":"3","S4_5":"1","S5_1":"5","S5_2":"3","S5_3":"4","S5_4":"1","S5_5":"4","S5_6":"5","S5_7":"4","S5_8":"4","S5_9":"2","S5_10":"1","S5_11":"5","S5_12":"1","S5_13":"3","S6_1":"3","S6_2":"1","S6_3":"5","S6_4":"1","S6_5":"3","S6_6":"2","S6_7":"2","S6_8":"2","S6_9":"2","S7_1":"1","S7_2":"5","S7_3":"1","S7_4":"2","S7_5":"1","S8_1":"4","S8_2":"3","S8_3":"2","S8_4":"2","S8_5":"3","S8_6":"5","S8_7":"3"},{"S2_Age":"65+","S2_Gender":"Non-binary","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Special","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Middle leader","S2_LearningArea":"Other","S2_Experience":"16-25","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Ongoing","S2_Voluntariness":"Self-directed","S2_Access":"School provided","S2_Confidence":"Low","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"1","S3_3":"2","S3_4":"1","S3_5":"3","S3_6":"1","S3_7":"3","S3_8":"4","S3_9":"3","S3_10":"4","S4_1":"3","S4_2":"2","S4_3":"3","S4_4":"2","S4_5":"4","S5_1":"4","S5_2":"3","S5_3":"5","S5_4":"5","S5_5":"2","S5_6":"1","S5_7":"1","S5_8":"1","S5_9":"1","S5_10":"3","S5_11":"2","S5_12":"5","S5_13":"1","S6_1":"5","S6_2":"4","S6_3":"1","S6_4":"5","S6_5":"1","S6_6":"5","S6_7":"1","S6_8":"3","S6_9":"4","S7_1":"2","S7_2":"3","S7_3":"2","S7_4":"1","S7_5":"3","S8_1":"3","S8_2":"5","S8_3":"1","S8_4":"1","S8_5":"3","S8_6":"5","S8_7":"4"},{"S2_Age":"45-54","S2_Gender":"Non-binary","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low","S2_Role":"Senior leader","S2_LearningArea":"Languages","S2_Experience":"16-25","S2_AIUseFrequency":"Never","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"None","S2_Confidence":"Very high","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"1","S3_3":"3","S3_4":"2","S3_5":"1","S3_6":"4","S3_7":"1","S3_8":"1","S3_9":"1","S3_10":"2","S4_1":"1","S4_2":"1","S4_3":"4","S4_4":"1","S4_5":"3","S5_1":"5","S5_2":"5","S5_3":"4","S5_4":"1","S5_5":"3","S5_6":"4","S5_7":"1","S5_8":"5","S5_9":"3","S5_10":"4","S5_11":"4","S5_12":"3","S5_13":"2","S6_1":"5","S6_2":"5","S6_3":"1","S6_4":"3","S6_5":"5","S6_6":"4","S6_7":"4","S6_8":"3","S6_9":"5","S7_1":"1","S7_2":"3","S7_3":"5","S7_4":"2","S7_5":"1","S8_1":"3","S8_2":"3","S8_3":"3","S8_4":"1","S8_5":"5","S8_6":"1","S8_7":"1"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Pasifika","S2_SchoolType":"Primary","S2_SchoolGeography":"Urban","S2_SchoolSES":"High","S2_Role":"Principal","S2_LearningArea":"Special education","S2_Experience":"4-7","S2_AIUseFrequency":"Very often","S2_AIPD":"Ongoing","S2_Voluntariness":"Required","S2_Access":"Limited","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"1","S3_3":"2","S3_4":"4","S3_5":"2","S3_6":"5","S3_7":"1","S3_8":"3","S3_9":"4","S3_10":"5","S4_1":"3","S4_2":"5","S4_3":"2","S4_4":"1","S4_5":"5","S5_1":"1","S5_2":"1","S5_3":"4","S5_4":"3","S5_5":"4","S5_6":"5","S5_7":"1","S5_8":"1","S5_9":"1","S5_10":"4","S5_11":"1","S5_12":"5","S5_13":"5","S6_1":"2","S6_2":"1","S6_3":"3","S6_4":"5","S6_5":"2","S6_6":"4","S6_7":"1","S6_8":"2","S6_9":"1","S7_1":"1","S7_2":"4","S7_3":"4","S7_4":"3","S7_5":"5","S8_1":"5","S8_2":"5","S8_3":"2","S8_4":"4","S8_5":"2","S8_6":"2","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"Science","S2_Experience":"8-15","S2_AIUseFrequency":"Never","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"None","S2_Confidence":"Low","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"2","S3_2":"4","S3_3":"5","S3_4":"3","S3_5":"4","S3_6":"5","S3_7":"2","S3_8":"5","S3_9":"2","S3_10":"5","S4_1":"3","S4_2":"4","S4_3":"1","S4_4":"4","S4_5":"1","S5_1":"4","S5_2":"5","S5_3":"3","S5_4":"5","S5_5":"5","S5_6":"5","S5_7":"4","S5_8":"5","S5_9":"1","S5_10":"2","S5_11":"4","S5_12":"4","S5_13":"4","S6_1":"3","S6_2":"4","S6_3":"4","S6_4":"3","S6_5":"3","S6_6":"4","S6_7":"3","S6_8":"1","S6_9":"3","S7_1":"3","S7_2":"2","S7_3":"5","S7_4":"1","S7_5":"1","S8_1":"1","S8_2":"3","S8_3":"5","S8_4":"2","S8_5":"2","S8_6":"4","S8_7":"3"},{"S2_Age":"35-44","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium","S2_Role":"Middle leader","S2_LearningArea":"English","S2_Experience":"25+","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Unsure","S2_Voluntariness":"Prefer not to say","S2_Access":"Personal tools","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"5","S3_2":"4","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"3","S3_7":"4","S3_8":"1","S3_9":"1","S3_10":"4","S4_1":"1","S4_2":"2","S4_3":"2","S4_4":"5","S4_5":"4","S5_1":"3","S5_2":"1","S5_3":"4","S5_4":"1","S5_5":"2","S5_6":"4","S5_7":"3","S5_8":"3","S5_9":"5","S5_10":"4","S5_11":"1","S5_12":"1","S5_13":"1","S6_1":"1","S6_2":"3","S6_3":"1","S6_4":"1","S6_5":"3","S6_6":"5","S6_7":"2","S6_8":"2","S6_9":"1","S7_1":"3","S7_2":"4","S7_3":"1","S7_4":"5","S7_5":"3","S8_1":"4","S8_2":"2","S8_3":"2","S8_4":"1","S8_5":"2","S8_6":"3","S8_7":"4"},{"S2_Age":"18-24","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Composite","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Senior leader","S2_LearningArea":"English","S2_Experience":"16-25","S2_AIUseFrequency":"Daily","S2_AIPD":"None","S2_Voluntariness":"Optional","S2_Access":"Both","S2_Confidence":"Very low","S2_UsageStage":"Integrated","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"1","S3_2":"1","S3_3":"1","S3_4":"5","S3_5":"2","S3_6":"2","S3_7":"5","S3_8":"4","S3_9":"3","S3_10":"3","S4_1":"2","S4_2":"1","S4_3":"3","S4_4":"1","S4_5":"1","S5_1":"1","S5_2":"3","S5_3":"3","S5_4":"2","S5_5":"2","S5_6":"5","S5_7":"1","S5_8":"1","S5_9":"2","S5_10":"3","S5_11":"5","S5_12":"1","S5_13":"3","S6_1":"2","S6_2":"2","S6_3":"1","S6_4":"5","S6_5":"4","S6_6":"4","S6_7":"1","S6_8":"4","S6_9":"3","S7_1":"2","S7_2":"2","S7_3":"1","S7_4":"5","S7_5":"2","S8_1":"4","S8_2":"5","S8_3":"4","S8_4":"1","S8_5":"4","S8_6":"2","S8_7":"1"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Low-Medium","S2_Role":"Principal","S2_LearningArea":"Primary general","S2_Experience":"4-7","S2_AIUseFrequency":"Sometimes","S2_AIPD":"6+ sessions","S2_Voluntariness":"Optional","S2_Access":"Limited","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"2","S3_2":"2","S3_3":"4","S3_4":"5","S3_5":"5","S3_6":"5","S3_7":"3","S3_8":"5","S3_9":"2","S3_10":"1","S4_1":"3","S4_2":"1","S4_3":"5","S4_4":"2","S4_5":"4","S5_1":"2","S5_2":"1","S5_3":"3","S5_4":"3","S5_5":"5","S5_6":"4","S5_7":"4","S5_8":"3","S5_9":"4","S5_10":"5","S5_11":"3","S5_12":"3","S5_13":"2","S6_1":"2","S6_2":"2","S6_3":"4","S6_4":"1","S6_5":"5","S6_6":"4","S6_7":"1","S6_8":"3","S6_9":"3","S7_1":"1","S7_2":"4","S7_3":"3","S7_4":"3","S7_5":"2","S8_1":"5","S8_2":"4","S8_3":"1","S8_4":"5","S8_5":"2","S8_6":"1","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Other","S2_SchoolType":"Secondary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"High","S2_Role":"Support staff","S2_LearningArea":"Science","S2_Experience":"0-3","S2_AIUseFrequency":"Daily","S2_AIPD":"Unsure","S2_Voluntariness":"Required","S2_Access":"Limited","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"5","S3_3":"5","S3_4":"4","S3_5":"3","S3_6":"1","S3_7":"4","S3_8":"3","S3_9":"4","S3_10":"2","S4_1":"1","S4_2":"3","S4_3":"1","S4_4":"2","S4_5":"4","S5_1":"5","S5_2":"2","S5_3":"4","S5_4":"1","S5_5":"5","S5_6":"5","S5_7":"4","S5_8":"2","S5_9":"3","S5_10":"5","S5_11":"2","S5_12":"4","S5_13":"5","S6_1":"3","S6_2":"5","S6_3":"5","S6_4":"1","S6_5":"2","S6_6":"4","S6_7":"5","S6_8":"5","S6_9":"5","S7_1":"1","S7_2":"1","S7_3":"3","S7_4":"2","S7_5":"3","S8_1":"1","S8_2":"2","S8_3":"4","S8_4":"2","S8_5":"3","S8_6":"3","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Prefer not to say","S2_SchoolType":"Other","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium","S2_Role":"Consultant","S2_LearningArea":"Languages","S2_Experience":"8-15","S2_AIUseFrequency":"Very often","S2_AIPD":"Prefer not to say","S2_Voluntariness":"Encouraged","S2_Access":"None","S2_Confidence":"Low","S2_UsageStage":"Regular use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"2","S3_3":"5","S3_4":"5","S3_5":"2","S3_6":"4","S3_7":"2","S3_8":"1","S3_9":"1","S3_10":"3","S4_1":"5","S4_2":"5","S4_3":"4","S4_4":"1","S4_5":"4","S5_1":"1","S5_2":"4","S5_3":"5","S5_4":"4","S5_5":"4","S5_6":"1","S5_7":"1","S5_8":"3","S5_9":"2","S5_10":"1","S5_11":"1","S5_12":"1","S5_13":"2","S6_1":"1","S6_2":"2","S6_3":"2","S6_4":"5","S6_5":"1","S6_6":"1","S6_7":"4","S6_8":"2","S6_9":"4","S7_1":"2","S7_2":"3","S7_3":"4","S7_4":"5","S7_5":"4","S8_1":"4","S8_2":"1","S8_3":"3","S8_4":"4","S8_5":"1","S8_6":"5","S8_7":"2"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Pasifika","S2_SchoolType":"Secondary","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium","S2_Role":"Principal","S2_LearningArea":"Other","S2_Experience":"16-25","S2_AIUseFrequency":"Sometimes","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Required","S2_Access":"None","S2_Confidence":"Very low","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"3","S3_3":"2","S3_4":"3","S3_5":"3","S3_6":"1","S3_7":"3","S3_8":"2","S3_9":"2","S3_10":"2","S4_1":"3","S4_2":"3","S4_3":"2","S4_4":"1","S4_5":"5","S5_1":"2","S5_2":"3","S5_3":"1","S5_4":"4","S5_5":"2","S5_6":"2","S5_7":"2","S5_8":"3","S5_9":"1","S5_10":"4","S5_11":"4","S5_12":"5","S5_13":"1","S6_1":"2","S6_2":"4","S6_3":"5","S6_4":"2","S6_5":"4","S6_6":"4","S6_7":"4","S6_8":"3","S6_9":"3","S7_1":"4","S7_2":"3","S7_3":"4","S7_4":"5","S7_5":"5","S8_1":"2","S8_2":"5","S8_3":"2","S8_4":"4","S8_5":"4","S8_6":"4","S8_7":"2"},{"S2_Age":"65+","S2_Gender":"Male","S2_Ethnicity":"Other","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low-Medium","S2_Role":"Support staff","S2_LearningArea":"Maths","S2_Experience":"8-15","S2_AIUseFrequency":"Never","S2_AIPD":"2-3 sessions","S2_Voluntariness":"Optional","S2_Access":"Personal tools","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"3","S3_3":"5","S3_4":"3","S3_5":"4","S3_6":"4","S3_7":"4","S3_8":"3","S3_9":"4","S3_10":"5","S4_1":"4","S4_2":"1","S4_3":"3","S4_4":"3","S4_5":"4","S5_1":"5","S5_2":"1","S5_3":"1","S5_4":"1","S5_5":"5","S5_6":"2","S5_7":"4","S5_8":"4","S5_9":"3","S5_10":"5","S5_11":"2","S5_12":"3","S5_13":"5","S6_1":"1","S6_2":"3","S6_3":"2","S6_4":"2","S6_5":"3","S6_6":"4","S6_7":"2","S6_8":"3","S6_9":"2","S7_1":"3","S7_2":"3","S7_3":"1","S7_4":"2","S7_5":"5","S8_1":"1","S8_2":"2","S8_3":"3","S8_4":"5","S8_5":"3","S8_6":"5","S8_7":"3"},{"S2_Age":"45-54","S2_Gender":"Male","S2_Ethnicity":"Asian","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Rural","S2_SchoolSES":"Medium-High","S2_Role":"Support staff","S2_LearningArea":"Special education","S2_Experience":"25+","S2_AIUseFrequency":"Never","S2_AIPD":"1 session","S2_Voluntariness":"Prefer not to say","S2_Access":"Unsure","S2_Confidence":"Very low","S2_UsageStage":"Occasional use","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"4","S3_3":"4","S3_4":"2","S3_5":"3","S3_6":"3","S3_7":"5","S3_8":"4","S3_9":"5","S3_10":"1","S4_1":"5","S4_2":"4","S4_3":"2","S4_4":"1","S4_5":"3","S5_1":"5","S5_2":"5","S5_3":"4","S5_4":"1","S5_5":"5","S5_6":"1","S5_7":"2","S5_8":"2","S5_9":"1","S5_10":"5","S5_11":"5","S5_12":"1","S5_13":"4","S6_1":"1","S6_2":"2","S6_3":"5","S6_4":"5","S6_5":"3","S6_6":"4","S6_7":"5","S6_8":"2","S6_9":"5","S7_1":"1","S7_2":"3","S7_3":"3","S7_4":"4","S7_5":"2","S8_1":"2","S8_2":"2","S8_3":"1","S8_4":"2","S8_5":"4","S8_6":"2","S8_7":"5"},{"S2_Age":"25-34","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Senior leader","S2_LearningArea":"Primary general","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"1 session","S2_Voluntariness":"Prefer not to say","S2_Access":"School provided","S2_Confidence":"Moderate","S2_UsageStage":"Regular use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"No","S3_1":"3","S3_2":"2","S3_3":"1","S3_4":"1","S3_5":"4","S3_6":"2","S3_7":"5","S3_8":"1","S3_9":"1","S3_10":"5","S4_1":"3","S4_2":"2","S4_3":"1","S4_4":"3","S4_5":"1","S5_1":"2","S5_2":"1","S5_3":"1","S5_4":"4","S5_5":"2","S5_6":"1","S5_7":"3","S5_8":"2","S5_9":"4","S5_10":"1","S5_11":"1","S5_12":"4","S5_13":"3","S6_1":"2","S6_2":"1","S6_3":"5","S6_4":"2","S6_5":"2","S6_6":"3","S6_7":"4","S6_8":"5","S6_9":"5","S7_1":"3","S7_2":"1","S7_3":"4","S7_4":"5","S7_5":"1","S8_1":"2","S8_2":"5","S8_3":"3","S8_4":"3","S8_5":"5","S8_6":"3","S8_7":"2"},{"S2_Age":"18-24","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"Low-Medium","S2_Role":"Teacher","S2_LearningArea":"Maths","S2_Experience":"16-25","S2_AIUseFrequency":"Never","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"None","S2_Confidence":"High","S2_UsageStage":"Exploring","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"5","S3_3":"4","S3_4":"3","S3_5":"2","S3_6":"5","S3_7":"4","S3_8":"4","S3_9":"3","S3_10":"3","S4_1":"3","S4_2":"4","S4_3":"5","S4_4":"1","S4_5":"4","S5_1":"2","S5_2":"5","S5_3":"2","S5_4":"3","S5_5":"4","S5_6":"1","S5_7":"5","S5_8":"2","S5_9":"3","S5_10":"3","S5_11":"2","S5_12":"5","S5_13":"3","S6_1":"5","S6_2":"3","S6_3":"5","S6_4":"1","S6_5":"3","S6_6":"3","S6_7":"2","S6_8":"4","S6_9":"3","S7_1":"5","S7_2":"3","S7_3":"2","S7_4":"5","S7_5":"4","S8_1":"4","S8_2":"1","S8_3":"1","S8_4":"1","S8_5":"5","S8_6":"3","S8_7":"1"},{"S2_Age":"35-44","S2_Gender":"Prefer not to say","S2_Ethnicity":"Māori","S2_SchoolType":"Intermediate","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Low-Medium","S2_Role":"Middle leader","S2_LearningArea":"Health/PE","S2_Experience":"8-15","S2_AIUseFrequency":"Rarely","S2_AIPD":"Unsure","S2_Voluntariness":"Optional","S2_Access":"School provided","S2_Confidence":"Very high","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"3","S3_2":"4","S3_3":"5","S3_4":"5","S3_5":"2","S3_6":"5","S3_7":"3","S3_8":"2","S3_9":"2","S3_10":"5","S4_1":"4","S4_2":"3","S4_3":"1","S4_4":"3","S4_5":"4","S5_1":"1","S5_2":"4","S5_3":"3","S5_4":"5","S5_5":"2","S5_6":"3","S5_7":"4","S5_8":"2","S5_9":"5","S5_10":"5","S5_11":"1","S5_12":"1","S5_13":"1","S6_1":"5","S6_2":"3","S6_3":"5","S6_4":"4","S6_5":"2","S6_6":"2","S6_7":"4","S6_8":"1","S6_9":"3","S7_1":"4","S7_2":"5","S7_3":"4","S7_4":"5","S7_5":"4","S8_1":"2","S8_2":"5","S8_3":"2","S8_4":"3","S8_5":"4","S8_6":"5","S8_7":"1"},{"S2_Age":"18-24","S2_Gender":"Female","S2_Ethnicity":"Pasifika","S2_SchoolType":"Special","S2_SchoolGeography":"Urban","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"Health/PE","S2_Experience":"8-15","S2_AIUseFrequency":"Daily","S2_AIPD":"Unsure","S2_Voluntariness":"Required","S2_Access":"School provided","S2_Confidence":"High","S2_UsageStage":"Regular use","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"2","S3_3":"5","S3_4":"1","S3_5":"1","S3_6":"5","S3_7":"3","S3_8":"1","S3_9":"1","S3_10":"3","S4_1":"4","S4_2":"2","S4_3":"4","S4_4":"2","S4_5":"1","S5_1":"3","S5_2":"1","S5_3":"1","S5_4":"5","S5_5":"2","S5_6":"3","S5_7":"1","S5_8":"4","S5_9":"2","S5_10":"1","S5_11":"4","S5_12":"4","S5_13":"1","S6_1":"2","S6_2":"5","S6_3":"5","S6_4":"5","S6_5":"4","S6_6":"5","S6_7":"4","S6_8":"4","S6_9":"1","S7_1":"1","S7_2":"4","S7_3":"2","S7_4":"5","S7_5":"5","S8_1":"2","S8_2":"5","S8_3":"1","S8_4":"4","S8_5":"3","S8_6":"2","S8_7":"3"},{"S2_Age":"25-34","S2_Gender":"Non-binary","S2_Ethnicity":"Māori","S2_SchoolType":"Secondary","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Consultant","S2_LearningArea":"Primary general","S2_Experience":"8-15","S2_AIUseFrequency":"Very often","S2_AIPD":"1 session","S2_Voluntariness":"Required","S2_Access":"Unsure","S2_Confidence":"Very low","S2_UsageStage":"Occasional use","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Yes","S3_1":"3","S3_2":"2","S3_3":"4","S3_4":"5","S3_5":"4","S3_6":"3","S3_7":"2","S3_8":"2","S3_9":"2","S3_10":"1","S4_1":"2","S4_2":"2","S4_3":"3","S4_4":"3","S4_5":"4","S5_1":"4","S5_2":"4","S5_3":"3","S5_4":"5","S5_5":"2","S5_6":"5","S5_7":"5","S5_8":"1","S5_9":"2","S5_10":"2","S5_11":"5","S5_12":"1","S5_13":"2","S6_1":"4","S6_2":"5","S6_3":"5","S6_4":"1","S6_5":"1","S6_6":"5","S6_7":"4","S6_8":"4","S6_9":"3","S7_1":"4","S7_2":"5","S7_3":"4","S7_4":"2","S7_5":"4","S8_1":"5","S8_2":"3","S8_3":"1","S8_4":"3","S8_5":"3","S8_6":"5","S8_7":"4"},{"S2_Age":"25-34","S2_Gender":"Male","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Composite","S2_SchoolGeography":"Urban","S2_SchoolSES":"Medium-High","S2_Role":"Other","S2_LearningArea":"Maths","S2_Experience":"0-3","S2_AIUseFrequency":"Daily","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"Personal tools","S2_Confidence":"Low","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Prefer not to say","S3_1":"5","S3_2":"5","S3_3":"3","S3_4":"1","S3_5":"3","S3_6":"4","S3_7":"2","S3_8":"1","S3_9":"2","S3_10":"4","S4_1":"5","S4_2":"1","S4_3":"4","S4_4":"2","S4_5":"2","S5_1":"2","S5_2":"4","S5_3":"4","S5_4":"1","S5_5":"3","S5_6":"3","S5_7":"5","S5_8":"3","S5_9":"1","S5_10":"1","S5_11":"1","S5_12":"2","S5_13":"1","S6_1":"2","S6_2":"5","S6_3":"5","S6_4":"2","S6_5":"3","S6_6":"3","S6_7":"5","S6_8":"2","S6_9":"2","S7_1":"5","S7_2":"4","S7_3":"4","S7_4":"5","S7_5":"3","S8_1":"1","S8_2":"1","S8_3":"4","S8_4":"5","S8_5":"5","S8_6":"1","S8_7":"4"},{"S2_Age":"25-34","S2_Gender":"Female","S2_Ethnicity":"Māori","S2_SchoolType":"Primary","S2_SchoolGeography":"Remote","S2_SchoolSES":"High","S2_Role":"Senior leader","S2_LearningArea":"English","S2_Experience":"25+","S2_AIUseFrequency":"Rarely","S2_AIPD":"Ongoing","S2_Voluntariness":"Unsure","S2_Access":"School provided","S2_Confidence":"High","S2_UsageStage":"Occasional use","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"2","S3_3":"2","S3_4":"2","S3_5":"3","S3_6":"2","S3_7":"1","S3_8":"1","S3_9":"3","S3_10":"5","S4_1":"2","S4_2":"3","S4_3":"5","S4_4":"4","S4_5":"3","S5_1":"4","S5_2":"5","S5_3":"4","S5_4":"1","S5_5":"5","S5_6":"2","S5_7":"1","S5_8":"5","S5_9":"1","S5_10":"2","S5_11":"1","S5_12":"3","S5_13":"3","S6_1":"2","S6_2":"3","S6_3":"4","S6_4":"3","S6_5":"4","S6_6":"1","S6_7":"2","S6_8":"3","S6_9":"4","S7_1":"5","S7_2":"5","S7_3":"3","S7_4":"2","S7_5":"1","S8_1":"3","S8_2":"5","S8_3":"3","S8_4":"5","S8_5":"3","S8_6":"1","S8_7":"3"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Other","S2_SchoolType":"Primary","S2_SchoolGeography":"Suburban","S2_SchoolSES":"Medium","S2_Role":"Teacher","S2_LearningArea":"Maths","S2_Experience":"4-7","S2_AIUseFrequency":"Rarely","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Prefer not to say","S2_Access":"Unsure","S2_Confidence":"Moderate","S2_UsageStage":"Exploring","S2_TeReoUse":"No","S2_TeReoTranslation":"Yes","S3_1":"1","S3_2":"2","S3_3":"1","S3_4":"3","S3_5":"3","S3_6":"3","S3_7":"2","S3_8":"3","S3_9":"1","S3_10":"3","S4_1":"2","S4_2":"5","S4_3":"5","S4_4":"5","S4_5":"4","S5_1":"5","S5_2":"3","S5_3":"1","S5_4":"1","S5_5":"3","S5_6":"1","S5_7":"5","S5_8":"3","S5_9":"5","S5_10":"1","S5_11":"3","S5_12":"3","S5_13":"4","S6_1":"4","S6_2":"3","S6_3":"2","S6_4":"2","S6_5":"4","S6_6":"1","S6_7":"1","S6_8":"4","S6_9":"2","S7_1":"5","S7_2":"4","S7_3":"4","S7_4":"2","S7_5":"4","S8_1":"2","S8_2":"3","S8_3":"1","S8_4":"5","S8_5":"4","S8_6":"3","S8_7":"3"},{"S2_Age":"55-64","S2_Gender":"Prefer not to say","S2_Ethnicity":"NZ European/Pākehā","S2_SchoolType":"Special","S2_SchoolGeography":"Rural","S2_SchoolSES":"Low","S2_Role":"Senior leader","S2_LearningArea":"Primary general","S2_Experience":"0-3","S2_AIUseFrequency":"Never","S2_AIPD":"1 session","S2_Voluntariness":"Self-directed","S2_Access":"Both","S2_Confidence":"High","S2_UsageStage":"Integrated","S2_TeReoUse":"No","S2_TeReoTranslation":"No","S3_1":"1","S3_2":"3","S3_3":"4","S3_4":"5","S3_5":"3","S3_6":"4","S3_7":"5","S3_8":"3","S3_9":"4","S3_10":"1","S4_1":"4","S4_2":"2","S4_3":"2","S4_4":"1","S4_5":"1","S5_1":"5","S5_2":"2","S5_3":"3","S5_4":"3","S5_5":"3","S5_6":"1","S5_7":"3","S5_8":"3","S5_9":"5","S5_10":"3","S5_11":"4","S5_12":"5","S5_13":"2","S6_1":"3","S6_2":"3","S6_3":"4","S6_4":"2","S6_5":"4","S6_6":"5","S6_7":"2","S6_8":"2","S6_9":"1","S7_1":"2","S7_2":"2","S7_3":"3","S7_4":"5","S7_5":"5","S8_1":"3","S8_2":"3","S8_3":"2","S8_4":"5","S8_5":"3","S8_6":"1","S8_7":"1"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Māori","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium","S2_Role":"Consultant","S2_LearningArea":"Primary general","S2_Experience":"8-15","S2_AIUseFrequency":"Often","S2_AIPD":"4-5 sessions","S2_Voluntariness":"Self-directed","S2_Access":"Limited","S2_Confidence":"Moderate","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Yes","S3_1":"4","S3_2":"4","S3_3":"2","S3_4":"3","S3_5":"4","S3_6":"5","S3_7":"2","S3_8":"2","S3_9":"3","S3_10":"5","S4_1":"2","S4_2":"1","S4_3":"2","S4_4":"1","S4_5":"4","S5_1":"1","S5_2":"2","S5_3":"4","S5_4":"1","S5_5":"3","S5_6":"1","S5_7":"1","S5_8":"2","S5_9":"3","S5_10":"4","S5_11":"4","S5_12":"5","S5_13":"4","S6_1":"1","S6_2":"3","S6_3":"2","S6_4":"3","S6_5":"3","S6_6":"5","S6_7":"5","S6_8":"2","S6_9":"5","S7_1":"4","S7_2":"5","S7_3":"1","S7_4":"5","S7_5":"1","S8_1":"3","S8_2":"2","S8_3":"1","S8_4":"4","S8_5":"2","S8_6":"5","S8_7":"4"},{"S2_Age":"55-64","S2_Gender":"Male","S2_Ethnicity":"Asian","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium-High","S2_Role":"Consultant","S2_LearningArea":"English","S2_Experience":"25+","S2_AIUseFrequency":"Sometimes","S2_AIPD":"Ongoing","S2_Voluntariness":"Encouraged","S2_Access":"Limited","S2_Confidence":"Very low","S2_UsageStage":"Integrated","S2_TeReoUse":"Yes","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"4","S3_3":"1","S3_4":"4","S3_5":"4","S3_6":"3","S3_7":"2","S3_8":"2","S3_9":"1","S3_10":"2","S4_1":"1","S4_2":"4","S4_3":"1","S4_4":"1","S4_5":"4","S5_1":"5","S5_2":"4","S5_3":"1","S5_4":"5","S5_5":"5","S5_6":"2","S5_7":"2","S5_8":"5","S5_9":"1","S5_10":"2","S5_11":"4","S5_12":"3","S5_13":"5","S6_1":"2","S6_2":"1","S6_3":"5","S6_4":"3","S6_5":"2","S6_6":"5","S6_7":"5","S6_8":"1","S6_9":"3","S7_1":"1","S7_2":"2","S7_3":"3","S7_4":"1","S7_5":"5","S8_1":"4","S8_2":"1","S8_3":"2","S8_4":"5","S8_5":"1","S8_6":"5","S8_7":"5"},{"S2_Age":"18-24","S2_Gender":"Non-binary","S2_Ethnicity":"Pasifika","S2_SchoolType":"Composite","S2_SchoolGeography":"Other","S2_SchoolSES":"Medium-High","S2_Role":"Teacher","S2_LearningArea":"English","S2_Experience":"4-7","S2_AIUseFrequency":"Daily","S2_AIPD":"1 session","S2_Voluntariness":"Required","S2_Access":"Both","S2_Confidence":"Very low","S2_UsageStage":"Integrated","S2_TeReoUse":"Prefer not to say","S2_TeReoTranslation":"Prefer not to say","S3_1":"4","S3_2":"1","S3_3":"1","S3_4":"3","S3_5":"3","S3_6":"2","S3_7":"1","S3_8":"5","S3_9":"3","S3_10":"2","S4_1":"4","S4_2":"3","S4_3":"5","S4_4":"5","S4_5":"4","S5_1":"4","S5_2":"3","S5_3":"3","S5_4":"4","S5_5":"2","S5_6":"4","S5_7":"3","S5_8":"3","S5_9":"5","S5_10":"5","S5_11":"1","S5_12":"5","S5_13":"1","S6_1":"2","S6_2":"5","S6_3":"2","S6_4":"2","S6_5":"2","S6_6":"4","S6_7":"1","S6_8":"2","S6_9":"4","S7_1":"4","S7_2":"3","S7_3":"1","S7_4":"5","S7_5":"2","S8_1":"1","S8_2":"5","S8_3":"3","S8_4":"1","S8_5":"1","S8_6":"2","S8_7":"2"}];
+_activeData = EMBEDDED_DATA;
+
+
+// ─── METADATA ────────────────────────────────────────────────────────────────
+const S2_META = [
+  { code: "S2_Age", label: "Age", type: "ordinal", order: ["18-24","25-34","35-44","45-54","55-64","65+"] },
+  { code: "S2_Gender", label: "Gender", type: "nominal" },
+  { code: "S2_Ethnicity", label: "Ethnicity", type: "nominal" },
+  { code: "S2_SchoolType", label: "School type", type: "nominal" },
+  { code: "S2_SchoolGeography", label: "School geography", type: "nominal" },
+  { code: "S2_SchoolSES", label: "School socioeconomic context", type: "ordinal", order: ["Low","Low-Medium","Medium","Medium-High","High"] },
+  { code: "S2_Role", label: "Role type", type: "nominal" },
+  { code: "S2_LearningArea", label: "Learning area taught", type: "nominal" },
+  { code: "S2_Experience", label: "Years of teaching experience", type: "ordinal", order: ["0-3","4-7","8-15","16-25","25+"] },
+  { code: "S2_AIUseFrequency", label: "Frequency of AI use", type: "ordinal", order: ["Never","Rarely","Sometimes","Often","Very often","Daily"] },
+  { code: "S2_AIPD", label: "AI-related professional development", type: "ordinal", order: ["None","1 session","2-3 sessions","4-5 sessions","6+ sessions","Ongoing","Unsure","Prefer not to say"] },
+  { code: "S2_Voluntariness", label: "Voluntariness of AI use", type: "nominal" },
+  { code: "S2_Access", label: "Access to AI tools", type: "nominal" },
+  { code: "S2_Confidence", label: "Confidence using AI tools", type: "ordinal", order: ["Very low","Low","Moderate","High","Very high"] },
+  { code: "S2_UsageStage", label: "Current AI usage stage", type: "ordinal", order: ["Exploring","Occasional use","Regular use","Integrated"] },
+  { code: "S2_TeReoUse", label: "AI use with te reo Māori", type: "nominal" },
+  { code: "S2_TeReoTranslation", label: "AI translation into/out of te reo Māori", type: "nominal" },
+];
+
+const SECTIONS = [
+  { key: "S3", label: "S3 – Effective AI Practice (Teacher)", items: [
+    { code: "S3_1", text: "I have a clear understanding of how AI can support teaching." },
+    { code: "S3_2", text: "AI tools help me save time when preparing lessons." },
+    { code: "S3_3", text: "AI tools help me generate new teaching ideas." },
+    { code: "S3_4", text: "AI tools help me differentiate learning for students." },
+    { code: "S3_5", text: "AI tools help me improve my teaching practice." },
+    { code: "S3_6", text: "AI tools help me reflect on my teaching." },
+    { code: "S3_7", text: "Using AI helps me remain professionally relevant in a changing educational environment." },
+    { code: "S3_8", text: "AI tools support collaboration with other educators." },
+    { code: "S3_9", text: "AI tools help me stay informed about developments in education." },
+    { code: "S3_10", text: "AI tools help me improve student learning outcomes." },
+  ]},
+  { key: "S4", label: "S4 – Effective AI Practice (Students)", items: [
+    { code: "S4_1", text: "I have a clear understanding of how often my students are using AI." },
+    { code: "S4_2", text: "I regularly talk with my students about their AI use." },
+    { code: "S4_3", text: "AI helps my students achieve better learning outcomes." },
+    { code: "S4_4", text: "AI helps students access learning they may otherwise struggle with." },
+    { code: "S4_5", text: "Students use AI in ways that strengthen learning rather than replace it." },
+  ]},
+  { key: "S5", label: "S5 – Barriers to AI Use", items: [
+    { code: "S5_1", text: "Lack of time prevents me from exploring AI tools." },
+    { code: "S5_2", text: "Lack of training prevents effective AI use." },
+    { code: "S5_3", text: "School policies limit my use of AI tools." },
+    { code: "S5_4", text: "Concerns about academic integrity limit AI use." },
+    { code: "S5_5", text: "Limited access to AI tools is a barrier." },
+    { code: "S5_6", text: "Limited knowledge of AI tools is a barrier." },
+    { code: "S5_7", text: "Lack of leadership support limits AI use." },
+    { code: "S5_8", text: "Concerns about student misuse limit AI use." },
+    { code: "S5_9", text: "Ethical concerns limit AI use." },
+    { code: "S5_10", text: "Data privacy concerns limit AI use." },
+    { code: "S5_11", text: "AI tools are difficult to integrate into my teaching." },
+    { code: "S5_12", text: "AI tools do not align well with curriculum goals." },
+    { code: "S5_13", text: "AI tools require too much time to learn." },
+  ]},
+  { key: "S6", label: "S6 – Ethical Concerns", items: [
+    { code: "S6_1", text: "AI may introduce bias into educational content." },
+    { code: "S6_2", text: "AI tools may reinforce inequalities in education." },
+    { code: "S6_3", text: "AI tools raise concerns about data privacy." },
+    { code: "S6_4", text: "AI tools may undermine student learning." },
+    { code: "S6_5", text: "AI tools may increase academic dishonesty." },
+    { code: "S6_6", text: "AI tools require clear ethical guidelines." },
+    { code: "S6_7", text: "AI tools require stronger school policies." },
+    { code: "S6_8", text: "AI tools should be critically evaluated before use." },
+    { code: "S6_9", text: "Educators should model responsible AI use." },
+  ]},
+  { key: "S7", label: "S7 – Knowledge Sharing", items: [
+    { code: "S7_1", text: "I regularly discuss AI with colleagues." },
+    { code: "S7_2", text: "My school encourages sharing AI practices." },
+    { code: "S7_3", text: "Professional networks help me learn about AI." },
+    { code: "S7_4", text: "Online communities help me learn about AI." },
+    { code: "S7_5", text: "I share AI practices with other educators." },
+  ]},
+  { key: "S8", label: "S8 – Attitudes and Beliefs", items: [
+    { code: "S8_1", text: "AI will become an important part of education." },
+    { code: "S8_2", text: "AI will significantly change teaching practice." },
+    { code: "S8_3", text: "AI will significantly change student learning." },
+    { code: "S8_4", text: "Educators should develop AI literacy." },
+    { code: "S8_5", text: "Students should develop AI literacy." },
+    { code: "S8_6", text: "AI tools should be integrated into teacher training." },
+    { code: "S8_7", text: "AI tools should be integrated into school policy." },
+  ]},
+];
+
+// Inject S2 as the first selectable section in the item picker
+const S2_SECTION = {
+  key: "S2",
+  label: "S2 – Demographic & Usage Variables",
+  items: S2_META.map(m => ({ code: m.code, text: m.label })),
+};
+const ALL_SECTIONS = [S2_SECTION, ...SECTIONS];
+
+// Pseudo-section for correlation matrix: ordinal S2 variables only
+const S2_ORDINAL_ITEMS = S2_META
+  .filter(m => m.type === "ordinal")
+  .map(m => ({ code: m.code, text: m.label, _orderMap: Object.fromEntries(m.order.map((v, i) => [v, i + 1])) }));
+
+const S2_ORDINAL_SECTION = {
+  key: "S2_ORDINAL",
+  label: "S2 – Ordinal variables (Age, Experience, Confidence…)",
+  items: S2_ORDINAL_ITEMS,
+};
+const CORR_SECTIONS = [...SECTIONS, S2_ORDINAL_SECTION];
+
+const LIKERT_LABELS = { 1: "Strongly disagree", 2: "Disagree", 3: "Neutral", 4: "Agree", 5: "Strongly agree" };
+const LIKERT_COLORS = {
+  1: "#b91c1c",
+  2: "#ef4444",
+  3: "#94a3b8",
+  4: "#3b82f6",
+  5: "#1d4ed8",
+};
+
+// Categorical palette for S2×S2 cross-tab bars
+const CAT_COLORS = [
+  "#3b82f6","#0ea5e9","#8b5cf6","#ec4899","#f59e0b",
+  "#10b981","#ef4444","#6366f1","#14b8a6","#f97316","#a3a3a3",
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function isS2Code(code) {
+  return S2_META.some(m => m.code === code);
+}
+
+function getItemMeta(code) {
+  // Check S2 first
+  const s2m = S2_META.find(m => m.code === code);
+  if (s2m) return { code: s2m.code, text: s2m.label, sectionLabel: "S2 – Demographic & Usage Variables" };
+  for (const sec of SECTIONS) {
+    for (const it of sec.items) {
+      if (it.code === code) return { ...it, sectionLabel: sec.label };
+    }
+  }
+  return null;
+}
+
+function getS2Meta(code) {
+  return S2_META.find(m => m.code === code);
+}
+
+// ── Likert mode (S2 × S3–S8) ──────────────────────────────────────────────
+function computeStats(s2Code, itemCode) {
+  const s2Meta = getS2Meta(s2Code);
+  const rows = _activeData.filter(r => {
+    const s2val = r[s2Code]?.trim();
+    const ival = parseInt(r[itemCode]);
+    return s2val && !isNaN(ival) && ival >= 1 && ival <= 5;
+  });
+
+  const groupMap = {};
+  rows.forEach(r => {
+    const g = r[s2Code]?.trim();
+    const v = parseInt(r[itemCode]);
+    if (!groupMap[g]) groupMap[g] = [];
+    groupMap[g].push(v);
+  });
+
+  let groups = Object.keys(groupMap);
+  if (s2Meta?.order) {
+    const ordered = s2Meta.order.filter(o => groups.includes(o));
+    const extras = groups.filter(g => !ordered.includes(g)).sort();
+    groups = [...ordered, ...extras];
+  } else {
+    groups = groups.sort();
+  }
+
+  const groupStats = groups.map(g => {
+    const vals = groupMap[g];
+    const n = vals.length;
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    vals.forEach(v => counts[v]++);
+    const pcts = {};
+    [1,2,3,4,5].forEach(k => pcts[k] = n > 0 ? (counts[k] / n) * 100 : 0);
+    const pctAgree = pcts[4] + pcts[5];
+    const pctDisagree = pcts[1] + pcts[2];
+    const mean = n > 0 ? vals.reduce((a, b) => a + b, 0) / n : 0;
+    return { group: g, n, counts, pcts, pctAgree, pctDisagree, mean };
+  });
+
+  const totalN = rows.length;
+  const allVals = rows.map(r => parseInt(r[itemCode]));
+  const overallMean = allVals.reduce((a, b) => a + b, 0) / (allVals.length || 1);
+  const overallPctAgree = groupStats.reduce((sum, gs) => sum + gs.counts[4] + gs.counts[5], 0) / (totalN || 1) * 100;
+
+  return { mode: "likert", groupStats, totalN, overallMean, overallPctAgree };
+}
+
+// ── Categorical cross-tab mode (S2 × S2) ─────────────────────────────────
+function computeCrossTab(s2Code, itemCode) {
+  const rowMeta = getS2Meta(s2Code);
+  const colMeta = getS2Meta(itemCode);
+
+  // Collect all category values for the item variable
+  const colValSet = new Set();
+  _activeData.forEach(r => { if (r[itemCode]?.trim()) colValSet.add(r[itemCode].trim()); });
+
+  // Order col values if ordinal
+  let colVals = [...colValSet];
+  if (colMeta?.order) {
+    const ordered = colMeta.order.filter(v => colVals.includes(v));
+    const extras = colVals.filter(v => !ordered.includes(v)).sort();
+    colVals = [...ordered, ...extras];
+  } else {
+    colVals = colVals.sort();
+  }
+
+  // Build row groups
+  const rowValSet = new Set();
+  _activeData.forEach(r => { if (r[s2Code]?.trim()) rowValSet.add(r[s2Code].trim()); });
+  let rowVals = [...rowValSet];
+  if (rowMeta?.order) {
+    const ordered = rowMeta.order.filter(v => rowVals.includes(v));
+    const extras = rowVals.filter(v => !ordered.includes(v)).sort();
+    rowVals = [...ordered, ...extras];
+  } else {
+    rowVals = rowVals.sort();
+  }
+
+  const groupStats = rowVals.map(rv => {
+    const rowRows = _activeData.filter(r => r[s2Code]?.trim() === rv && r[itemCode]?.trim());
+    const n = rowRows.length;
+    const counts = {};
+    colVals.forEach(cv => counts[cv] = 0);
+    rowRows.forEach(r => { const cv = r[itemCode].trim(); if (counts[cv] !== undefined) counts[cv]++; });
+    const pcts = {};
+    colVals.forEach(cv => pcts[cv] = n > 0 ? (counts[cv] / n) * 100 : 0);
+    return { group: rv, n, counts, pcts };
+  });
+
+  return { mode: "crosstab", groupStats, colVals, totalN: _activeData.filter(r => r[s2Code]?.trim() && r[itemCode]?.trim()).length };
+}
+
+function generateNarrative(s2Code, itemCode, stats) {
+  const s2Meta = getS2Meta(s2Code);
+  const itemMeta = getItemMeta(itemCode);
+
+  if (stats.mode === "crosstab") {
+    const { groupStats, colVals, totalN } = stats;
+    if (!groupStats.length) return "No valid data available for this pairing.";
+    // Find most common category overall
+    const totals = {};
+    colVals.forEach(cv => totals[cv] = groupStats.reduce((s, g) => s + (g.counts[cv] || 0), 0));
+    const topCat = colVals.reduce((a, b) => totals[a] >= totals[b] ? a : b, colVals[0]);
+    return `In this sample (N = ${totalN}), this cross-tabulation compares ${s2Meta?.label?.toLowerCase()} (rows) against ${itemMeta?.text?.toLowerCase()} (columns). The most frequently observed category for ${itemMeta?.text?.toLowerCase()} overall is "${topCat}" (n = ${totals[topCat]}). Each row shows the percentage distribution of ${itemMeta?.text?.toLowerCase()} responses within each ${s2Meta?.label?.toLowerCase()} group. These patterns are descriptive only and should be interpreted with caution given the exploratory nature of the analysis and the sample size.`;
+  }
+
+  const { groupStats, totalN, overallMean, overallPctAgree } = stats;
+  if (!groupStats.length) return "No valid data available for this pairing.";
+
+  const sorted = [...groupStats].sort((a, b) => b.pctAgree - a.pctAgree);
+  const top = sorted.slice(0, 2).filter(g => g.n >= 3);
+  const bottom = sorted.slice(-2).filter(g => g.n >= 3).reverse();
+
+  const tendencyDesc = overallMean >= 3.5 ? "broadly positive" : overallMean >= 2.5 ? "mixed or neutral" : "broadly negative or sceptical";
+  const spreadVals = groupStats.map(g => g.pctAgree);
+  const spreadRange = Math.max(...spreadVals) - Math.min(...spreadVals);
+  const differenceDesc = spreadRange > 30 ? "more noticeable variation" : spreadRange > 15 ? "some variation" : "relatively small variation";
+
+  let narrative = `In this sample (N = ${totalN}), responses to the item "${itemMeta?.text}" appear ${tendencyDesc} overall, with a mean Likert score of ${overallMean.toFixed(2)} and ${Math.round(overallPctAgree)}% of respondents selecting Agree or Strongly Agree. `;
+  narrative += `When examined by ${s2Meta?.label?.toLowerCase()}, there is ${differenceDesc} across groups. `;
+  if (top.length) {
+    const topNames = top.map(g => `${g.group} (${Math.round(g.pctAgree)}% agree)`).join(" and ");
+    narrative += `Responses appear more positive among ${topNames}. `;
+  }
+  if (bottom.length && bottom[0].group !== top[0]?.group) {
+    const botNames = bottom.map(g => `${g.group} (${Math.round(g.pctAgree)}% agree)`).join(" and ");
+    narrative += `Lower endorsement is visible among ${botNames}. `;
+  }
+  narrative += `These patterns should be interpreted with caution given the sample size and the exploratory nature of this analysis.`;
+  return narrative;
+}
+
+function computeS2Rankings(itemCode) {
+  if (isS2Code(itemCode)) {
+    // For S2×S2, rank by spread of modal category % across groups
+    return S2_META.filter(m => m.code !== itemCode).map(s2m => {
+      const ct = computeCrossTab(s2m.code, itemCode);
+      const pctModals = ct.groupStats.map(g => {
+        const maxPct = Math.max(...ct.colVals.map(cv => g.pcts[cv] || 0));
+        return maxPct;
+      });
+      const spread = pctModals.length >= 2 ? Math.max(...pctModals) - Math.min(...pctModals) : 0;
+      return { ...s2m, spread: Math.round(spread) };
+    }).sort((a, b) => b.spread - a.spread);
+  }
+  return S2_META.map(s2m => {
+    const stats = computeStats(s2m.code, itemCode);
+    const vals = stats.groupStats.map(g => g.pctAgree);
+    const spread = vals.length >= 2 ? Math.max(...vals) - Math.min(...vals) : 0;
+    return { ...s2m, spread: Math.round(spread) };
+  }).sort((a, b) => b.spread - a.spread);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ─── INFERENTIAL STATISTICS LIBRARY ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Utility: rank array values (average ties) ─────────────────────────────
+function rankData(arr) {
+  const sorted = [...arr].map((v, i) => ({ v, i })).sort((a, b) => a.v - b.v);
+  const ranks = new Array(arr.length);
+  let i = 0;
+  while (i < sorted.length) {
+    let j = i;
+    while (j < sorted.length && sorted[j].v === sorted[i].v) j++;
+    const avgRank = (i + j - 1) / 2 + 1;
+    for (let k = i; k < j; k++) ranks[sorted[k].i] = avgRank;
+    i = j;
+  }
+  return ranks;
+}
+
+// ── Chi-square CDF approximation (regularised incomplete gamma) ───────────
+function gammln(x) {
+  const cof = [76.18009172947146,-86.50532032941677,24.01409824083091,
+    -1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+  let y = x, tmp = x + 5.5;
+  tmp -= (x + 0.5) * Math.log(tmp);
+  let ser = 1.000000000190015;
+  for (let j = 0; j < 6; j++) ser += cof[j] / ++y;
+  return -tmp + Math.log(2.5066282746310005 * ser / x);
+}
+
+function gammp(a, x) {
+  if (x < 0 || a <= 0) return 0;
+  if (x === 0) return 0;
+  if (x < a + 1) return gser(a, x);
+  return 1 - gcf(a, x);
+}
+
+function gser(a, x) {
+  const ITMAX = 200, EPS = 3e-7;
+  if (x <= 0) return 0;
+  let ap = a, del = 1 / a, sum = del;
+  for (let n = 1; n <= ITMAX; n++) {
+    ++ap; del *= x / ap; sum += del;
+    if (Math.abs(del) < Math.abs(sum) * EPS) break;
+  }
+  return sum * Math.exp(-x + a * Math.log(x) - gammln(a));
+}
+
+function gcf(a, x) {
+  const ITMAX = 200, EPS = 3e-7, FPMIN = 1e-30;
+  let b = x + 1 - a, c = 1 / FPMIN, d = 1 / b, h = d;
+  for (let i = 1; i <= ITMAX; i++) {
+    const an = -i * (i - a);
+    b += 2; d = an * d + b;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = b + an / c;
+    if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d;
+    const del = d * c;
+    h *= del;
+    if (Math.abs(del - 1) < EPS) break;
+  }
+  return Math.exp(-x + a * Math.log(x) - gammln(a)) * h;
+}
+
+function chiSquarePValue(chi2, df) {
+  if (df <= 0 || chi2 < 0) return 1;
+  return 1 - gammp(df / 2, chi2 / 2);
+}
+
+function normalCDF(z) {
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const sign = z < 0 ? -1 : 1;
+  z = Math.abs(z) / Math.sqrt(2);
+  const t = 1 / (1 + p * z);
+  const y = 1 - (((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-z*z);
+  return 0.5 * (1 + sign * y);
+}
+
+// ── Kruskal-Wallis H test ─────────────────────────────────────────────────
+function kruskalWallis(groups) {
+  // groups: array of arrays of numeric values
+  const validGroups = groups.filter(g => g.length > 0);
+  if (validGroups.length < 2) return null;
+
+  const allVals = validGroups.flat();
+  const N = allVals.length;
+  if (N < 3) return null;
+
+  const allRanks = rankData(allVals);
+  let offset = 0;
+  const groupRanks = validGroups.map(g => {
+    const r = allRanks.slice(offset, offset + g.length);
+    offset += g.length;
+    return r;
+  });
+
+  // Tie correction
+  const tieMap = {};
+  allVals.forEach(v => tieMap[v] = (tieMap[v] || 0) + 1);
+  const C = 1 - Object.values(tieMap).reduce((s, t) => s + (t ** 3 - t), 0) / (N ** 3 - N);
+
+  const H_num = (12 / (N * (N + 1))) *
+    groupRanks.reduce((s, gr) => s + (gr.reduce((a, b) => a + b, 0) ** 2) / gr.length, 0) -
+    3 * (N + 1);
+
+  const H = C !== 0 ? H_num / C : H_num;
+  const df = validGroups.length - 1;
+  const p = chiSquarePValue(H, df);
+
+  // Eta-squared effect size
+  const eta2 = (H - df + 1) / (N - df);
+  const eta2Clamped = Math.max(0, eta2);
+  const eta2Label = eta2Clamped < 0.01 ? "negligible" : eta2Clamped < 0.06 ? "small" : eta2Clamped < 0.14 ? "medium" : "large";
+
+  return { H: +H.toFixed(3), df, p: +p.toFixed(4), eta2: +eta2Clamped.toFixed(3), eta2Label, N };
+}
+
+// ── Mann-Whitney U (pairwise) ─────────────────────────────────────────────
+function mannWhitneyU(a, b) {
+  if (a.length < 2 || b.length < 2) return null;
+  const n1 = a.length, n2 = b.length;
+  let U1 = 0;
+  for (let i = 0; i < n1; i++)
+    for (let j = 0; j < n2; j++)
+      U1 += a[i] > b[j] ? 1 : a[i] === b[j] ? 0.5 : 0;
+  const U2 = n1 * n2 - U1;
+  const U = Math.min(U1, U2);
+  const mU = n1 * n2 / 2;
+  const sU = Math.sqrt(n1 * n2 * (n1 + n2 + 1) / 12);
+  const z = sU > 0 ? (U - mU) / sU : 0;
+  const p = 2 * (1 - normalCDF(Math.abs(z)));
+  const r = Math.abs(z) / Math.sqrt(n1 + n2); // rank-biserial approx
+  return { U: +U.toFixed(1), z: +z.toFixed(3), p: +p.toFixed(4), r: +r.toFixed(3), n1, n2 };
+}
+
+// ── Spearman's rho ────────────────────────────────────────────────────────
+function spearmanRho(xs, ys) {
+  if (xs.length !== ys.length || xs.length < 3) return null;
+  const n = xs.length;
+  const rx = rankData(xs), ry = rankData(ys);
+  const d2 = rx.reduce((s, r, i) => s + (r - ry[i]) ** 2, 0);
+  const rho = 1 - (6 * d2) / (n * (n ** 2 - 1));
+  const t = rho * Math.sqrt((n - 2) / (1 - rho ** 2));
+  // approximate p via t-distribution (large-sample normal approx for t)
+  const p = 2 * (1 - normalCDF(Math.abs(t)));
+  const label = Math.abs(rho) < 0.1 ? "negligible" : Math.abs(rho) < 0.3 ? "small" : Math.abs(rho) < 0.5 ? "moderate" : "large";
+  return { rho: +rho.toFixed(3), p: +p.toFixed(4), label, n };
+}
+
+// ── Chi-square + Cramér's V ───────────────────────────────────────────────
+function chiSquareCramersV(groupStats, colVals) {
+  // groupStats: [{group, n, counts:{cv:count}}, ...], colVals: string[]
+  const rowTotals = groupStats.map(g => g.n);
+  const colTotals = colVals.map(cv => groupStats.reduce((s, g) => s + (g.counts[cv] || 0), 0));
+  const N = rowTotals.reduce((a, b) => a + b, 0);
+  if (N === 0) return null;
+
+  let chi2 = 0;
+  let smallCells = 0, totalCells = 0;
+  groupStats.forEach((g, r) => {
+    colVals.forEach((cv, c) => {
+      const obs = g.counts[cv] || 0;
+      const exp = (rowTotals[r] * colTotals[c]) / N;
+      totalCells++;
+      if (exp < 5) smallCells++;
+      if (exp > 0) chi2 += (obs - exp) ** 2 / exp;
+    });
+  });
+
+  const df = (groupStats.length - 1) * (colVals.length - 1);
+  const p = df > 0 ? chiSquarePValue(chi2, df) : 1;
+  const V = Math.sqrt(chi2 / (N * Math.min(groupStats.length - 1, colVals.length - 1)));
+  const VLabel = V < 0.1 ? "negligible" : V < 0.3 ? "small" : V < 0.5 ? "moderate" : "large";
+  const smallCellPct = Math.round(100 * smallCells / totalCells);
+  const fisherWarning = smallCellPct > 20;
+
+  return { chi2: +chi2.toFixed(3), df, p: +p.toFixed(4), V: +V.toFixed(3), VLabel, N, smallCellPct, fisherWarning };
+}
+
+// ── Cronbach's alpha ──────────────────────────────────────────────────────
+function cronbachAlpha(sectionKey) {
+  const section = SECTIONS.find(s => s.key === sectionKey);
+  if (!section) return null;
+  const items = section.items.map(it => it.code);
+  const k = items.length;
+  if (k < 2) return null;
+
+  const rows = _activeData.map(r => {
+    const vals = items.map(c => parseInt(r[c])).filter(v => !isNaN(v));
+    return vals.length === k ? vals : null;
+  }).filter(Boolean);
+
+  const n = rows.length;
+  if (n < 3) return null;
+
+  const itemVars = items.map((_, j) => {
+    const vals = rows.map(r => r[j]);
+    const mean = vals.reduce((a, b) => a + b, 0) / n;
+    return vals.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1);
+  });
+
+  const totalScores = rows.map(r => r.reduce((a, b) => a + b, 0));
+  const totalMean = totalScores.reduce((a, b) => a + b, 0) / n;
+  const totalVar = totalScores.reduce((s, v) => s + (v - totalMean) ** 2, 0) / (n - 1);
+
+  const sumItemVars = itemVars.reduce((a, b) => a + b, 0);
+  const alpha = totalVar > 0 ? (k / (k - 1)) * (1 - sumItemVars / totalVar) : 0;
+  const label = alpha < 0.5 ? "poor" : alpha < 0.6 ? "unacceptable" : alpha < 0.7 ? "questionable" : alpha < 0.8 ? "acceptable" : alpha < 0.9 ? "good" : "excellent";
+
+  return { alpha: +alpha.toFixed(3), label, k, n };
+}
+
+// ── Full Spearman correlation matrix for a section ────────────────────────
+function sectionCorrelationMatrix(rowSectionKey, colSectionKey) {
+  // Look up from CORR_SECTIONS which includes S2_ORDINAL
+  const rowSection = CORR_SECTIONS.find(s => s.key === rowSectionKey);
+  const colSection = CORR_SECTIONS.find(s => s.key === colSectionKey);
+  if (!rowSection || !colSection) return null;
+
+  const rowItems = rowSection.items;
+  const colItems = colSection.items;
+  const sameSection = rowSectionKey === colSectionKey;
+
+  // Helper: get numeric value for an item/row — handles ordinal S2 mapping
+  function getVal(item, r) {
+    if (item._orderMap) {
+      const raw = r[item.code] ? r[item.code].trim() : null;
+      return (raw && item._orderMap[raw] !== undefined) ? item._orderMap[raw] : NaN;
+    }
+    return parseInt(r[item.code]);
+  }
+
+  const matrix = [];
+  for (let i = 0; i < rowItems.length; i++) {
+    const row = [];
+    for (let j = 0; j < colItems.length; j++) {
+      if (sameSection && i === j) {
+        row.push({ rho: 1, p: 0, diagonal: true });
+        continue;
+      }
+      const pairs = _activeData.map(r => {
+        const x = getVal(rowItems[i], r);
+        const y = getVal(colItems[j], r);
+        return (!isNaN(x) && !isNaN(y)) ? [x, y] : null;
+      }).filter(Boolean);
+      row.push(pairs.length >= 3 ? spearmanRho(pairs.map(p => p[0]), pairs.map(p => p[1])) : null);
+    }
+    matrix.push(row);
+  }
+
+  const totalCells = sameSection
+    ? rowItems.length * (rowItems.length - 1) / 2
+    : rowItems.length * colItems.length;
+  const expectedByChance = Math.round(totalCells * 0.05);
+
+  return { rowItems, colItems, matrix, sameSection, totalCells, expectedByChance };
+}
+
+// ── Compute all inferential stats for current selection ───────────────────
+function computeInferentialStats(s2Code, itemCode, stats) {
+  const s2Meta = getS2Meta(s2Code);
+  const result = { warnings: [] };
+
+  if (stats.mode === "crosstab") {
+    // Chi-square + Cramér's V
+    const ct = chiSquareCramersV(stats.groupStats, stats.colVals);
+    result.chiSquare = ct;
+    if (ct && ct.fisherWarning) {
+      result.warnings.push(`${ct.smallCellPct}% of cells have expected counts < 5. Chi-square results should be interpreted with caution. Consider collapsing categories.`);
+    }
+    if (ct && stats.totalN < 40) {
+      result.warnings.push("N is small for a chi-square test. Results are indicative only.");
+    }
+  } else {
+    // Likert mode
+    const groups = stats.groupStats.map(g => {
+      const vals = [];
+      [1,2,3,4,5].forEach(k => { for (let i = 0; i < g.counts[k]; i++) vals.push(k); });
+      return { name: g.group, vals, n: g.n };
+    });
+
+    const smallGroups = groups.filter(g => g.n < 5);
+    if (smallGroups.length > 0) {
+      result.warnings.push(`${smallGroups.length} group(s) have n < 5 (${smallGroups.map(g => g.name).join(", ")}). Statistical results for these groups are unreliable.`);
+    }
+    if (stats.totalN < 30) {
+      result.warnings.push("Total N is small. All inferential results should be treated as exploratory only.");
+    }
+
+    // Kruskal-Wallis
+    result.kw = kruskalWallis(groups.map(g => g.vals));
+
+    // Spearman rho (for ordinal S2 variables)
+    if (s2Meta && s2Meta.order) {
+      const orderMap = {};
+      s2Meta.order.forEach((v, i) => orderMap[v] = i + 1);
+      const pairs = _activeData.map(r => {
+        const s2v = r[s2Code]?.trim();
+        const iv = parseInt(r[itemCode]);
+        if (!s2v || !(s2v in orderMap) || isNaN(iv)) return null;
+        return [orderMap[s2v], iv];
+      }).filter(Boolean);
+      result.spearman = pairs.length >= 3 ? spearmanRho(pairs.map(p => p[0]), pairs.map(p => p[1])) : null;
+    }
+
+    // Pairwise Mann-Whitney (only if KW is significant and <= 6 groups to keep it manageable)
+    if (result.kw && result.kw.p < 0.05 && groups.length >= 2 && groups.length <= 8) {
+      const pairs = [];
+      for (let i = 0; i < groups.length; i++) {
+        for (let j = i + 1; j < groups.length; j++) {
+          if (groups[i].vals.length >= 2 && groups[j].vals.length >= 2) {
+            const mw = mannWhitneyU(groups[i].vals, groups[j].vals);
+            if (mw) pairs.push({ a: groups[i].name, b: groups[j].name, ...mw });
+          }
+        }
+      }
+      // Bonferroni correction
+      const m = pairs.length;
+      result.pairwise = pairs.map(p => ({ ...p, pAdj: Math.min(1, +(p.p * m).toFixed(4)), m }));
+    }
+  }
+
+  return result;
+}
+
+// ─── CRONBACH ALPHA PANEL DATA ────────────────────────────────────────────
+function allAlphas() {
+  return SECTIONS.map(s => ({ ...s, alpha: cronbachAlpha(s.key) }));
+}
+
+// ─── CROSS-TAB CHART (S2 × S2 categorical) ───────────────────────────────────
+function CrossTabChart({ groupStats, colVals, itemLabel }) {
+  if (!groupStats.length) return <div className="text-gray-400 italic text-sm p-4">No data</div>;
+  return (
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[480px]">
+        {groupStats.map(gs => (
+          <div key={gs.group} className="mb-2">
+            <div className="flex items-center gap-2">
+              <div className="text-xs text-gray-600 font-medium w-36 shrink-0 text-right truncate" title={gs.group}>{gs.group}</div>
+              <div className="flex-1 flex rounded overflow-hidden h-6 bg-gray-100">
+                {colVals.map((cv, i) => (
+                  gs.pcts[cv] > 0 && (
+                    <div
+                      key={cv}
+                      style={{ width: `${gs.pcts[cv]}%`, backgroundColor: CAT_COLORS[i % CAT_COLORS.length] }}
+                      className="relative"
+                      title={`${cv}: ${gs.pcts[cv].toFixed(1)}%`}
+                    >
+                      {gs.pcts[cv] >= 12 && (
+                        <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-medium">
+                          {Math.round(gs.pcts[cv])}%
+                        </span>
+                      )}
+                    </div>
+                  )
+                ))}
+              </div>
+              <div className="text-xs text-gray-400 w-10 text-right">n={gs.n}</div>
+            </div>
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {colVals.map((cv, i) => (
+            <div key={cv} className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: CAT_COLORS[i % CAT_COLORS.length] }} />
+              <span className="text-xs text-gray-500">{cv}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── CROSS-TAB COUNT TABLE ────────────────────────────────────────────────────
+function CrossTabTable({ groupStats, colVals }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs border-collapse">
+        <thead>
+          <tr className="border-b border-gray-200">
+            <th className="text-left py-2 pr-3 font-semibold text-gray-700">Group</th>
+            <th className="text-center py-1 px-1 font-semibold text-gray-700">n</th>
+            {colVals.map(cv => (
+              <th key={cv} className="text-center py-1 px-1 font-semibold text-gray-600 max-w-[80px]">
+                <span className="block truncate" title={cv}>{cv}</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {groupStats.map((gs, i) => (
+            <tr key={gs.group} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-gray-50/50" : ""}`}>
+              <td className="py-1.5 pr-3 text-gray-700 font-medium">{gs.group}</td>
+              <td className="text-center py-1.5 px-1 text-gray-500">{gs.n}</td>
+              {colVals.map(cv => (
+                <td key={cv} className="text-center py-1.5 px-1 text-gray-600">
+                  {gs.counts[cv] > 0 ? (
+                    <span className="font-medium">{gs.counts[cv]}</span>
+                  ) : (
+                    <span className="text-gray-300">—</span>
+                  )}
+                  {gs.n > 0 && gs.counts[cv] > 0 && (
+                    <span className="text-gray-400 ml-0.5">({Math.round(gs.pcts[cv])}%)</span>
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ─── STACKED BAR CHART ───────────────────────────────────────────────────────
+function StackedBarChart({ groupStats }) {
+  if (!groupStats.length) return <div className="text-gray-400 italic text-sm p-4">No data</div>;
+  const maxBarWidth = 100;
+  return (
+    <div className="w-full overflow-x-auto">
+      <div className="min-w-[480px]">
+        {groupStats.map(gs => (
+          <div key={gs.group} className="mb-2">
+            <div className="flex items-center gap-2 mb-0.5">
+              <div className="text-xs text-gray-600 font-medium w-36 shrink-0 text-right truncate" title={gs.group}>{gs.group}</div>
+              <div className="flex-1 flex rounded overflow-hidden h-6 bg-gray-100">
+                {[1,2,3,4,5].map(k => (
+                  gs.pcts[k] > 0 && (
+                    <div
+                      key={k}
+                      style={{ width: `${gs.pcts[k]}%`, backgroundColor: LIKERT_COLORS[k] }}
+                      className="relative group/bar"
+                      title={`${LIKERT_LABELS[k]}: ${gs.pcts[k].toFixed(1)}%`}
+                    >
+                      {gs.pcts[k] >= 10 && (
+                        <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-medium">
+                          {Math.round(gs.pcts[k])}%
+                        </span>
+                      )}
+                    </div>
+                  )
+                ))}
+              </div>
+              <div className="text-xs text-gray-400 w-10 text-right">n={gs.n}</div>
+            </div>
+          </div>
+        ))}
+        {/* Legend */}
+        <div className="flex flex-wrap gap-3 mt-4 pl-38">
+          {[1,2,3,4,5].map(k => (
+            <div key={k} className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: LIKERT_COLORS[k] }} />
+              <span className="text-xs text-gray-500">{LIKERT_LABELS[k]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── MEAN SCORE CHART ────────────────────────────────────────────────────────
+function MeanScoreChart({ groupStats }) {
+  if (!groupStats.length) return null;
+  const maxMean = 5;
+  return (
+    <div className="w-full">
+      {groupStats.map(gs => (
+        <div key={gs.group} className="mb-2 flex items-center gap-2">
+          <div className="text-xs text-gray-600 font-medium w-36 shrink-0 text-right truncate" title={gs.group}>{gs.group}</div>
+          <div className="flex-1 flex items-center gap-2">
+            <div className="flex-1 bg-gray-100 rounded h-5 overflow-hidden">
+              <div
+                className="h-5 rounded transition-all duration-500"
+                style={{ width: `${(gs.mean / maxMean) * 100}%`, backgroundColor: gs.mean >= 3.5 ? "#3b82f6" : gs.mean >= 2.5 ? "#94a3b8" : "#ef4444" }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-gray-700 w-10">{gs.mean.toFixed(2)}</span>
+          </div>
+        </div>
+      ))}
+      <div className="flex justify-between text-xs text-gray-400 mt-1 pl-38">
+        <span>1 (SD)</span><span>3 (Neutral)</span><span>5 (SA)</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── SUMMARY TABLE ───────────────────────────────────────────────────────────
+function SummaryTable({ groupStats }) {
+  return (
+    <table className="w-full text-sm border-collapse">
+      <thead>
+        <tr className="border-b border-gray-200">
+          <th className="text-left py-2 pr-4 font-semibold text-gray-700">Group</th>
+          <th className="text-center py-2 px-2 font-semibold text-gray-700">n</th>
+          <th className="text-center py-2 px-2 font-semibold text-gray-700">% Agree+</th>
+          <th className="text-center py-2 px-2 font-semibold text-gray-700">Mean</th>
+          <th className="text-center py-2 px-2 font-semibold text-gray-700">% Neutral</th>
+          <th className="text-center py-2 px-2 font-semibold text-gray-700">% Disagree–</th>
+        </tr>
+      </thead>
+      <tbody>
+        {groupStats.map((gs, i) => (
+          <tr key={gs.group} className={`border-b border-gray-100 ${i % 2 === 0 ? "bg-gray-50/50" : ""}`}>
+            <td className="py-2 pr-4 text-gray-700 font-medium">{gs.group}</td>
+            <td className="text-center py-2 px-2 text-gray-600">{gs.n}</td>
+            <td className="text-center py-2 px-2 font-semibold" style={{ color: gs.pctAgree >= 60 ? "#1d4ed8" : gs.pctAgree >= 40 ? "#475569" : "#b91c1c" }}>
+              {gs.pctAgree.toFixed(1)}%
+            </td>
+            <td className="text-center py-2 px-2 text-gray-700">{gs.mean.toFixed(2)}</td>
+            <td className="text-center py-2 px-2 text-gray-500">{gs.pcts[3].toFixed(1)}%</td>
+            <td className="text-center py-2 px-2 text-gray-500">{gs.pctDisagree.toFixed(1)}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+
+// ─── CORRELATION MATRIX DISPLAY COMPONENT ────────────────────────────────────
+function CorrMatrixDisplay({ rowSection, colSection }) {
+  const cm = sectionCorrelationMatrix(rowSection, colSection);
+  if (!cm) return <p className="text-xs text-slate-400">No data.</p>;
+
+  const { rowItems, colItems, matrix, sameSection, totalCells, expectedByChance } = cm;
+
+  let sigCount = 0;
+  matrix.forEach(function(row, i) {
+    row.forEach(function(cell, j) {
+      // For same-section (symmetric), only count upper triangle (j > i)
+      // For cross-section, count all cells
+      const countThis = sameSection ? j > i : true;
+      if (countThis && cell && !cell.diagonal && cell.p < 0.05) sigCount++;
+    });
+  });
+  const uniqueSigCount = sigCount;
+
+  return (
+    <div>
+      <div className="flex flex-wrap gap-3 mb-3 text-xs">
+        <span className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600">
+          <span className="font-semibold">{totalCells}</span>{sameSection ? " unique pairs" : " cell pairs"}
+        </span>
+        <span className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 text-blue-700">
+          <span className="font-semibold">{uniqueSigCount}</span> significant at p &lt; .05
+        </span>
+        <span className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 text-amber-700">
+          ~<span className="font-semibold">{expectedByChance}</span> expected by chance alone
+        </span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="border-collapse" style={{fontSize:"10px"}}>
+          <thead>
+            <tr>
+              <th className="p-1 text-right pr-2 text-slate-400 font-normal"></th>
+              {colItems.map(function(it, j) {
+                return (
+                  <th key={j} className="p-1 text-center font-semibold text-slate-500 w-10" title={it.text}>
+                    {it.code.replace("_",".")}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.map(function(row, i) {
+              return (
+                <tr key={i}>
+                  <td className="p-1 font-semibold text-slate-500 pr-2 whitespace-nowrap text-right" title={rowItems[i].text}>
+                    {rowItems[i].code.replace("_",".")}
+                  </td>
+                  {row.map(function(cell, j) {
+                    if (!cell) {
+                      return <td key={j} className="p-0.5"><div className="w-9 h-7 rounded" style={{backgroundColor:"#f8fafc"}}></div></td>;
+                    }
+                    if (cell.diagonal) {
+                      return (
+                        <td key={j} className="p-0.5 text-center">
+                          <div className="w-9 h-7 rounded flex items-center justify-center font-bold" style={{backgroundColor:"#e2e8f0",color:"#64748b",fontSize:"10px"}}>—</div>
+                        </td>
+                      );
+                    }
+                    const abs = Math.abs(cell.rho);
+                    const sig = cell.p < 0.05;
+                    const pos = cell.rho >= 0;
+                    // Lower triangle in same-section matrix is a mirror — show dimmed
+                    const isLower = sameSection && j < i;
+                    const alpha = isLower ? 0.08 + abs * 0.2 : 0.1 + abs * 0.75;
+                    const bg = sig ? (pos ? "rgba(59,130,246," + alpha + ")" : "rgba(239,68,68," + alpha + ")") : "#f8fafc";
+                    const textColor = isLower ? "#c0ccd9" : (sig && abs > 0.4 ? "#fff" : sig ? (pos ? "#1e40af" : "#991b1b") : "#94a3b8");
+                    const tipText = rowItems[i].code + " x " + colItems[j].code + ": rho=" + cell.rho + " p=" + (cell.p < 0.001 ? "<.001" : cell.p.toFixed(3)) + (isLower ? " (mirror)" : "");
+                    return (
+                      <td key={j} className="p-0.5 text-center" title={tipText}>
+                        <div className="w-9 h-7 rounded flex items-center justify-center font-semibold cursor-default"
+                          style={{backgroundColor:bg, color:textColor, fontSize:"10px", opacity: isLower ? 0.5 : 1}}>
+                          {cell.rho > 0 ? "+" : ""}{cell.rho.toFixed(2)}
+                        </div>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex flex-wrap gap-4 mt-3" style={{fontSize:"10px",color:"#94a3b8"}}>
+        <span><span className="inline-block w-3 h-3 rounded mr-1 align-middle" style={{backgroundColor:"#60a5fa"}}></span>Positive (p &lt; .05)</span>
+        <span><span className="inline-block w-3 h-3 rounded mr-1 align-middle" style={{backgroundColor:"#f87171"}}></span>Negative (p &lt; .05)</span>
+        <span><span className="inline-block w-3 h-3 rounded mr-1 align-middle" style={{backgroundColor:"#f1f5f9"}}></span>Not significant</span>
+        <span>Hover a cell for exact values. Spearman rank correlations.</span>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [uploadedData, setUploadedData] = useState(null);
+  const [uploadView, setUploadView] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null); // {ok, msg, n}
+
+  // Keep module-level _activeData in sync
+  _activeData = uploadedData || EMBEDDED_DATA;
+
+  const [selectedS2, setSelectedS2] = useState("S2_AIUseFrequency");
+  const [selectedItem, setSelectedItem] = useState("S3_7");
+  const [expandedSections, setExpandedSections] = useState({ S2: false, S3: true, S4: false, S5: false, S6: false, S7: false, S8: false });
+
+  const isCrossTab = useMemo(() => isS2Code(selectedItem), [selectedItem]);
+  const stats = useMemo(
+    () => isCrossTab ? computeCrossTab(selectedS2, selectedItem) : computeStats(selectedS2, selectedItem),
+    [selectedS2, selectedItem, isCrossTab]
+  );
+  const infStats = useMemo(() => computeInferentialStats(selectedS2, selectedItem, stats), [selectedS2, selectedItem, stats]);
+  const alphas = useMemo(() => allAlphas(), []);
+  const narrative = useMemo(() => generateNarrative(selectedS2, selectedItem, stats), [selectedS2, selectedItem, stats]);
+  const s2Rankings = useMemo(() => computeS2Rankings(selectedItem), [selectedItem]);
+  const itemMeta = useMemo(() => getItemMeta(selectedItem), [selectedItem]);
+  const s2Meta = useMemo(() => getS2Meta(selectedS2), [selectedS2]);
+  const [showPairwise, setShowPairwise] = useState(false);
+  const [corrRowSection, setCorrRowSection] = useState("S3");
+  const [corrColSection, setCorrColSection] = useState("S3");
+
+  function toggleSection(key) {
+    setExpandedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function handleCSVUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const text = ev.target.result;
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) { setUploadStatus({ ok: false, msg: "File appears empty." }); return; }
+
+        const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+
+        // Validate required columns
+        const required = ["S2_Age","S2_Gender","S3_1","S3_7","S8_7"];
+        const missing = required.filter(r => !headers.includes(r));
+        if (missing.length > 0) {
+          setUploadStatus({ ok: false, msg: `Missing expected columns: ${missing.join(", ")}. Please check your CSV matches the survey structure.` });
+          return;
+        }
+
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          // Handle quoted commas by simple split (works for this survey format)
+          const vals = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+          if (vals.length !== headers.length) continue;
+          const row = {};
+          headers.forEach((h, j) => row[h] = vals[j]);
+          rows.push(row);
+        }
+
+        if (rows.length === 0) { setUploadStatus({ ok: false, msg: "No data rows found." }); return; }
+
+        setUploadedData(rows);
+        setUploadStatus({ ok: true, msg: `Successfully loaded ${rows.length} participant${rows.length !== 1 ? "s" : ""} from "${file.name}".`, n: rows.length });
+        setUploadView(false);
+      } catch(err) {
+        setUploadStatus({ ok: false, msg: "Failed to parse CSV: " + err.message });
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function handleResetData() {
+    setUploadedData(null);
+    setUploadStatus(null);
+  }
+
+  return (
+    <div className="h-screen flex flex-col bg-slate-50 font-sans overflow-hidden">
+
+      {/* HEADER — fixed at top */}
+      <div className="bg-white border-b border-slate-200 shadow-sm shrink-0">
+        <div className="px-5 py-3">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-tight">AI in Education Survey Explorer</h1>
+                {uploadedData ? (
+                  <span className="text-[10px] font-semibold bg-green-100 text-green-700 border border-green-200 px-2 py-0.5 rounded-full">
+                    Custom data · {uploadedData.length} rows
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200 px-2 py-0.5 rounded-full">
+                    Demo data · {EMBEDDED_DATA.length} rows
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Item-level exploration · New Zealand educators · Select a variable and item to update the view</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "Participants", value: `N = ${(_activeData || EMBEDDED_DATA).length}` },
+                { label: "Variables", value: "66 items" },
+                { label: "Pairings", value: "2,145" },
+                { label: "Current view", value: `${s2Meta?.label ?? "—"} × ${selectedItem.replace("_",".")}` },
+              ].map(card => (
+                <div key={card.label} className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5">
+                  <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider leading-none">{card.label}</div>
+                  <div className="text-xs font-semibold text-slate-800 mt-0.5">{card.value}</div>
+                </div>
+              ))}
+              <button
+                onClick={() => setUploadView(v => !v)}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-300 text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                {uploadView ? "Hide Upload" : "Upload CSV"}
+              </button>
+              {uploadedData && (
+                <button
+                  onClick={handleResetData}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-red-200 text-red-500 bg-red-50 hover:bg-red-100 transition-colors"
+                >
+                  Reset to Demo
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* UPLOAD PANEL — slides in below header */}
+      {uploadView && (
+        <div className="bg-white border-b border-slate-200 shrink-0 px-5 py-4">
+          <div className="max-w-2xl">
+            <h2 className="text-sm font-semibold text-slate-800 mb-1">Upload your survey CSV</h2>
+            <p className="text-xs text-slate-500 mb-3">
+              Your CSV must have the same column structure as the demo data — one row per participant, with columns
+              S2_Age through S2_TeReoTranslation and S3_1 through S8_7. Likert items should be numeric (1–5).
+              Your file is processed entirely in your browser and never sent anywhere.
+            </p>
+            <div className="flex items-center gap-3">
+              <label className="cursor-pointer flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Choose CSV file
+                <input type="file" accept=".csv,text/csv" onChange={handleCSVUpload} className="hidden" />
+              </label>
+              {uploadStatus && (
+                <div className={`flex items-start gap-2 text-xs px-3 py-2 rounded-lg border flex-1 ${
+                  uploadStatus.ok
+                    ? "bg-green-50 border-green-200 text-green-800"
+                    : "bg-red-50 border-red-200 text-red-800"
+                }`}>
+                  <span className="font-bold shrink-0">{uploadStatus.ok ? "✓" : "✗"}</span>
+                  <span>{uploadStatus.msg}</span>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 text-[10px] text-slate-400">
+              Expected columns: S2_Age, S2_Gender, S2_Ethnicity, S2_SchoolType, S2_SchoolGeography, S2_SchoolSES, S2_Role, S2_LearningArea, S2_Experience, S2_AIUseFrequency, S2_AIPD, S2_Voluntariness, S2_Access, S2_Confidence, S2_UsageStage, S2_TeReoUse, S2_TeReoTranslation, S3_1…S3_10, S4_1…S4_5, S5_1…S5_13, S6_1…S6_9, S7_1…S7_5, S8_1…S8_7
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BODY — fills remaining height, no overflow */}
+      <div className="flex flex-1 min-h-0 gap-3 p-3">
+
+        {/* ── LEFT SIDEBAR: S2 + Item selectors stacked, each independently scrollable ── */}
+        <div className="flex flex-col gap-3 w-56 shrink-0 min-h-0">
+
+          {/* S2 Variable selector */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col min-h-0" style={{ flex: "0 0 auto", maxHeight: "46%" }}>
+            <div className="px-4 pt-3 pb-2 shrink-0 border-b border-slate-100">
+              <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">S2 Variable</h2>
+            </div>
+            <div className="overflow-y-auto flex-1 px-2 py-2 space-y-0.5">
+              {S2_META.map(m => (
+                <button
+                  key={m.code}
+                  onClick={() => setSelectedS2(m.code)}
+                  className={`w-full text-left text-xs px-3 py-1.5 rounded-lg transition-colors ${
+                    selectedS2 === m.code
+                      ? "bg-blue-600 text-white font-semibold"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Survey Item selector */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col flex-1 min-h-0">
+            <div className="px-4 pt-3 pb-2 shrink-0 border-b border-slate-100">
+              <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Survey Item</h2>
+            </div>
+            <div className="overflow-y-auto flex-1 px-2 py-2 space-y-0.5">
+              {ALL_SECTIONS.map(sec => (
+                <div key={sec.key}>
+                  <button
+                    onClick={() => toggleSection(sec.key)}
+                    className="w-full flex justify-between items-center text-left px-2 py-1.5 hover:bg-slate-50 rounded-lg transition-colors"
+                  >
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{sec.label.split(" – ")[0]}</span>
+                    <span className="text-slate-300 text-[10px]">{expandedSections[sec.key] ? "▲" : "▼"}</span>
+                  </button>
+                  {expandedSections[sec.key] && (
+                    <div className="ml-1 space-y-0.5 mb-1">
+                      {sec.items.map(it => (
+                        <button
+                          key={it.code}
+                          onClick={() => setSelectedItem(it.code)}
+                          className={`w-full text-left text-[11px] px-3 py-1.5 rounded-lg transition-colors leading-snug ${
+                            selectedItem === it.code
+                              ? "bg-blue-600 text-white font-semibold"
+                              : "text-slate-600 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span className="font-bold mr-1">{it.code.replace("_",".")}.</span>
+                          {it.text.length > 55 ? it.text.slice(0, 53) + "…" : it.text}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT RESULTS PANEL: scrollable ── */}
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-3 pr-1">
+
+          {/* Comparison header */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1">
+                  {s2Meta?.label} × {selectedItem.replace("_",".")}
+                </div>
+                <h2 className="text-sm font-semibold text-slate-800 leading-snug max-w-3xl">
+                  {itemMeta?.text}
+                </h2>
+                <div className="text-[11px] text-slate-400 mt-0.5">{itemMeta?.sectionLabel}</div>
+              </div>
+              <div className="shrink-0 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                N = {stats.totalN}
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 mt-3">
+              {(isCrossTab ? [
+                { label: "Total N", value: stats.totalN },
+                { label: "Row groups", value: stats.groupStats.length },
+                { label: "Column categories", value: stats.colVals?.length ?? "—" },
+              ] : [
+                { label: "Overall mean", value: `${stats.overallMean.toFixed(2)} / 5` },
+                { label: "% Agree+", value: `${Math.round(stats.overallPctAgree)}%` },
+                { label: "Groups", value: stats.groupStats.length },
+              ]).map(c => (
+                <div key={c.label} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{c.label}</div>
+                  <div className="text-base font-bold text-slate-800 mt-0.5">{c.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Charts — branch on mode */}
+          {isCrossTab ? (
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-slate-700 mb-3">
+                Distribution of <span className="text-blue-600">{itemMeta?.text}</span> by {s2Meta?.label}
+              </h3>
+              <CrossTabChart groupStats={stats.groupStats} colVals={stats.colVals} itemLabel={itemMeta?.text} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+                <h3 className="text-xs font-semibold text-slate-700 mb-3">Likert Distribution by {s2Meta?.label}</h3>
+                <StackedBarChart groupStats={stats.groupStats} />
+              </div>
+              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+                <h3 className="text-xs font-semibold text-slate-700 mb-3">Mean Score by {s2Meta?.label}</h3>
+                <MeanScoreChart groupStats={stats.groupStats} />
+              </div>
+            </div>
+          )}
+
+          {/* Narrative */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl shadow-sm p-4">
+            <h3 className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-2">
+              <span className="inline-block w-2 h-2 bg-blue-400 rounded-full" />
+              Narrative Summary
+            </h3>
+            <p className="text-xs text-slate-700 leading-relaxed">{narrative}</p>
+          </div>
+
+          {/* Summary table + rankings side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 overflow-x-auto">
+              <h3 className="text-xs font-semibold text-slate-700 mb-3">
+                {isCrossTab ? "Cross-Tabulation" : "Summary Table"}
+              </h3>
+              {isCrossTab ? (
+                <CrossTabTable groupStats={stats.groupStats} colVals={stats.colVals} />
+              ) : (
+                <SummaryTable groupStats={stats.groupStats} />
+              )}
+            </div>
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+              <h3 className="text-xs font-semibold text-slate-700 mb-0.5">Top Related S2 Variables</h3>
+              <p className="text-[10px] text-slate-400 mb-3">Ranked by spread in % Agree+ — exploratory only.</p>
+              <div className="space-y-1">
+                {s2Rankings.map((r, i) => (
+                  <button
+                    key={r.code}
+                    onClick={() => setSelectedS2(r.code)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-left ${
+                      r.code === selectedS2 ? "bg-blue-50 border border-blue-200" : "hover:bg-slate-50"
+                    }`}
+                  >
+                    <span className="text-[10px] text-slate-400 w-4 text-center font-mono shrink-0">{i+1}</span>
+                    <span className="text-xs text-slate-700 flex-1 font-medium truncate">{r.label}</span>
+                    <div className="w-16 bg-gray-100 rounded h-1.5 shrink-0">
+                      <div className="h-1.5 rounded bg-blue-500" style={{ width: `${Math.min(r.spread, 100)}%` }} />
+                    </div>
+                    <span className="text-[10px] text-slate-400 w-12 text-right shrink-0">{r.spread}%</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+
+          {/* ── INFERENTIAL STATISTICS ── */}
+          <div className="bg-blue-700 rounded-xl px-4 py-2 flex items-center gap-2">
+            <span className="text-white text-xs font-bold uppercase tracking-widest">Inferential Statistics</span>
+            <span className="text-blue-300 text-[10px] ml-auto">Exploratory — interpret with caution</span>
+          </div>
+
+          {/* Warnings */}
+          {infStats.warnings && infStats.warnings.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <h3 className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-1">
+                <span>⚠</span> Small-sample warnings
+              </h3>
+              {infStats.warnings.map((w, i) => (
+                <p key={i} className="text-xs text-amber-800 leading-relaxed mb-1">{w}</p>
+              ))}
+            </div>
+          )}
+
+          {/* KW or Chi-square block */}
+          {!isCrossTab && infStats.kw && (
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Kruskal-Wallis H Test</h3>
+              <p className="text-xs text-slate-400 mb-4">Tests whether Likert distributions differ significantly across {s2Meta?.label} groups. Non-parametric; appropriate for ordinal data.</p>
+              <div className="flex flex-wrap gap-3 mb-4">
+                {[
+                  { label: "H statistic", value: infStats.kw.H },
+                  { label: "df", value: infStats.kw.df },
+                  { label: "p-value", value: infStats.kw.p < 0.001 ? "< .001" : infStats.kw.p.toFixed(3) },
+                  { label: "η² (effect size)", value: `${infStats.kw.eta2} (${infStats.kw.eta2Label})` },
+                  { label: "N", value: infStats.kw.N },
+                ].map(c => (
+                  <div key={c.label} className={`border rounded-xl px-3 py-2 ${
+                    c.label === "p-value"
+                      ? infStats.kw.p < 0.05 ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-slate-200"
+                      : "bg-slate-50 border-slate-200"
+                  }`}>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{c.label}</div>
+                    <div className={`text-base font-bold mt-0.5 ${c.label === "p-value" && infStats.kw.p < 0.05 ? "text-blue-700" : "text-slate-800"}`}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {infStats.kw.p < 0.05
+                  ? `The test suggests a statistically significant difference in ${itemMeta?.text?.toLowerCase()} responses across ${s2Meta?.label?.toLowerCase()} groups (H = ${infStats.kw.H}, df = ${infStats.kw.df}, p = ${infStats.kw.p < 0.001 ? "< .001" : infStats.kw.p.toFixed(3)}). The effect size η² = ${infStats.kw.eta2} indicates a ${infStats.kw.eta2Label} effect. Interpret with caution given the sample size.`
+                  : `The test does not suggest a statistically significant difference across ${s2Meta?.label?.toLowerCase()} groups (H = ${infStats.kw.H}, df = ${infStats.kw.df}, p = ${infStats.kw.p.toFixed(3)}). The effect size η² = ${infStats.kw.eta2} is ${infStats.kw.eta2Label}.`
+                }
+              </p>
+            </div>
+          )}
+
+          {/* Spearman rho */}
+          {!isCrossTab && infStats.spearman && (
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Spearman's Rank Correlation (ρ)</h3>
+              <p className="text-xs text-slate-400 mb-4">Monotonic association between the ordered {s2Meta?.label} scale and item responses. Available because {s2Meta?.label} has a defined ordinal order.</p>
+              <div className="flex flex-wrap gap-3 mb-4">
+                {[
+                  { label: "ρ (rho)", value: infStats.spearman.rho },
+                  { label: "p-value", value: infStats.spearman.p < 0.001 ? "< .001" : infStats.spearman.p.toFixed(3) },
+                  { label: "Effect size", value: infStats.spearman.label },
+                  { label: "n", value: infStats.spearman.n },
+                ].map(c => (
+                  <div key={c.label} className={`border rounded-xl px-3 py-2 ${
+                    c.label === "p-value"
+                      ? infStats.spearman.p < 0.05 ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-slate-200"
+                      : "bg-slate-50 border-slate-200"
+                  }`}>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{c.label}</div>
+                    <div className={`text-base font-bold mt-0.5 ${c.label === "p-value" && infStats.spearman.p < 0.05 ? "text-blue-700" : "text-slate-800"}`}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {infStats.spearman.p < 0.05
+                  ? `There is a statistically significant ${infStats.spearman.label} monotonic association between ${s2Meta?.label?.toLowerCase()} and responses to this item (ρ = ${infStats.spearman.rho}, p = ${infStats.spearman.p < 0.001 ? "< .001" : infStats.spearman.p.toFixed(3)}). ${infStats.spearman.rho > 0 ? "Higher values on the predictor scale are associated with higher item endorsement." : "Higher values on the predictor scale are associated with lower item endorsement."}`
+                  : `No significant monotonic association was found between ${s2Meta?.label?.toLowerCase()} and this item (ρ = ${infStats.spearman.rho}, p = ${infStats.spearman.p.toFixed(3)}).`
+                }
+              </p>
+            </div>
+          )}
+
+          {/* Pairwise Mann-Whitney */}
+          {!isCrossTab && infStats.pairwise && infStats.pairwise.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-sm font-semibold text-slate-700">Pairwise Mann-Whitney U Tests</h3>
+                <button onClick={() => setShowPairwise(p => !p)} className="text-xs text-blue-600 hover:underline">
+                  {showPairwise ? "Hide" : "Show"} ({infStats.pairwise.length} pairs)
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mb-3">
+                Post-hoc follow-up since Kruskal-Wallis was significant (p &lt; .05). Bonferroni-corrected α = {(0.05 / infStats.pairwise[0].m).toFixed(4)} (m = {infStats.pairwise[0].m} comparisons).
+              </p>
+              {showPairwise && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-1.5 pr-3 font-semibold text-slate-600">Group A</th>
+                        <th className="text-left py-1.5 pr-3 font-semibold text-slate-600">Group B</th>
+                        <th className="text-center py-1.5 px-2 font-semibold text-slate-600">U</th>
+                        <th className="text-center py-1.5 px-2 font-semibold text-slate-600">z</th>
+                        <th className="text-center py-1.5 px-2 font-semibold text-slate-600">p (raw)</th>
+                        <th className="text-center py-1.5 px-2 font-semibold text-slate-600">p (adj.)</th>
+                        <th className="text-center py-1.5 px-2 font-semibold text-slate-600">r</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {infStats.pairwise.map((pw, i) => {
+                        const sig = pw.pAdj < 0.05;
+                        return (
+                          <tr key={i} className={`border-b border-slate-100 ${sig ? "bg-blue-50" : i % 2 === 0 ? "bg-slate-50/40" : ""}`}>
+                            <td className="py-1.5 pr-3 text-slate-700 font-medium">{pw.a}</td>
+                            <td className="py-1.5 pr-3 text-slate-700 font-medium">{pw.b}</td>
+                            <td className="text-center py-1.5 px-2 text-slate-600">{pw.U}</td>
+                            <td className="text-center py-1.5 px-2 text-slate-600">{pw.z}</td>
+                            <td className="text-center py-1.5 px-2 text-slate-600">{pw.p < 0.001 ? "< .001" : pw.p.toFixed(3)}</td>
+                            <td className={`text-center py-1.5 px-2 font-semibold ${sig ? "text-blue-700" : "text-slate-500"}`}>
+                              {pw.pAdj < 0.001 ? "< .001" : pw.pAdj.toFixed(3)}{sig ? " *" : ""}
+                            </td>
+                            <td className="text-center py-1.5 px-2 text-slate-600">{pw.r}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  <p className="text-[10px] text-slate-400 mt-2">* Significant after Bonferroni correction. r = rank-biserial effect size.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Chi-square + Cramér's V */}
+          {isCrossTab && infStats.chiSquare && (
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+              <h3 className="text-sm font-semibold text-slate-700 mb-1">Chi-Square Test of Independence + Cramér's V</h3>
+              <p className="text-xs text-slate-400 mb-4">Tests whether {s2Meta?.label} and {itemMeta?.text?.toLowerCase()} are statistically independent.</p>
+              <div className="flex flex-wrap gap-3 mb-4">
+                {[
+                  { label: "χ² statistic", value: infStats.chiSquare.chi2 },
+                  { label: "df", value: infStats.chiSquare.df },
+                  { label: "p-value", value: infStats.chiSquare.p < 0.001 ? "< .001" : infStats.chiSquare.p.toFixed(3) },
+                  { label: "Cramér's V", value: `${infStats.chiSquare.V} (${infStats.chiSquare.VLabel})` },
+                  { label: "N", value: infStats.chiSquare.N },
+                  { label: "Cells exp < 5", value: `${infStats.chiSquare.smallCellPct}%` },
+                ].map(c => (
+                  <div key={c.label} className={`border rounded-xl px-3 py-2 ${
+                    c.label === "p-value"
+                      ? infStats.chiSquare.p < 0.05 ? "bg-blue-50 border-blue-200" : "bg-slate-50 border-slate-200"
+                      : c.label === "Cells exp < 5" && infStats.chiSquare.fisherWarning ? "bg-amber-50 border-amber-200"
+                      : "bg-slate-50 border-slate-200"
+                  }`}>
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{c.label}</div>
+                    <div className={`text-base font-bold mt-0.5 ${
+                      c.label === "p-value" && infStats.chiSquare.p < 0.05 ? "text-blue-700" :
+                      c.label === "Cells exp < 5" && infStats.chiSquare.fisherWarning ? "text-amber-700" :
+                      "text-slate-800"
+                    }`}>{c.value}</div>
+                  </div>
+                ))}
+              </div>
+              {infStats.chiSquare.fisherWarning && (
+                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                  Over 20% of cells have expected counts below 5. Fisher's Exact Test would be more appropriate but is computationally intensive for large tables. Interpret χ² result with caution.
+                </p>
+              )}
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {infStats.chiSquare.p < 0.05
+                  ? `The chi-square test suggests a statistically significant association between ${s2Meta?.label?.toLowerCase()} and ${itemMeta?.text?.toLowerCase()} (χ²(${infStats.chiSquare.df}) = ${infStats.chiSquare.chi2}, p = ${infStats.chiSquare.p < 0.001 ? "< .001" : infStats.chiSquare.p.toFixed(3)}). Cramér's V = ${infStats.chiSquare.V} indicates a ${infStats.chiSquare.VLabel} effect.`
+                  : `The chi-square test does not suggest a statistically significant association (χ²(${infStats.chiSquare.df}) = ${infStats.chiSquare.chi2}, p = ${infStats.chiSquare.p.toFixed(3)}). Cramér's V = ${infStats.chiSquare.V} (${infStats.chiSquare.VLabel} effect).`
+                }
+              </p>
+            </div>
+          )}
+
+
+          {/* ── RELIABILITY & CORRELATIONS ── */}
+          <div className="bg-slate-700 rounded-xl px-4 py-2 flex items-center gap-2">
+            <span className="text-white text-xs font-bold uppercase tracking-widest">Reliability &amp; Correlations</span>
+          </div>
+
+          {/* Cronbach's alpha for all sections */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-slate-700 mb-1">Cronbach's Alpha — Internal Consistency by Section</h3>
+            <p className="text-xs text-slate-400 mb-4">Measures how consistently items within each section measure the same construct. Based on all {(_activeData || EMBEDDED_DATA).length} participants with complete section responses.</p>
+            <div className="space-y-2">
+              {alphas.map(sec => sec.alpha && (
+                <div key={sec.key} className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50">
+                  <span className="text-xs font-bold text-slate-500 w-6">{sec.key}</span>
+                  <span className="text-xs text-slate-700 flex-1 truncate">{sec.label.split(" – ")[1]}</span>
+                  <div className="w-32 bg-gray-100 rounded h-2">
+                    <div className="h-2 rounded transition-all"
+                      style={{
+                        width: `${Math.max(0, Math.min(100, sec.alpha.alpha * 100))}%`,
+                        backgroundColor: sec.alpha.alpha >= 0.8 ? "#3b82f6" : sec.alpha.alpha >= 0.7 ? "#10b981" : sec.alpha.alpha >= 0.6 ? "#f59e0b" : "#ef4444"
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs font-bold text-slate-700 w-12 text-right">α = {sec.alpha.alpha}</span>
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-24 text-center ${
+                    sec.alpha.alpha >= 0.8 ? "bg-blue-100 text-blue-700" :
+                    sec.alpha.alpha >= 0.7 ? "bg-green-100 text-green-700" :
+                    sec.alpha.alpha >= 0.6 ? "bg-amber-100 text-amber-700" :
+                    "bg-red-100 text-red-700"
+                  }`}>{sec.alpha.label}</span>
+                  <span className="text-[10px] text-slate-400 w-16 text-right">k={sec.alpha.k}, n={sec.alpha.n}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Spearman correlation matrix */}
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
+            <h3 className="text-sm font-semibold text-slate-700 mb-1">Spearman Item Correlation Matrix</h3>
+            <p className="text-xs text-slate-400 mb-3">
+              Select two sections to compare — including S2 ordinal variables (Age, Experience, Confidence, etc.).
+              Same section on both axes shows the diagonal as 1. Highlighted cells: p &lt; .05, treat as exploratory.
+            </p>
+
+            {/* Section selectors */}
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 w-8">Rows</span>
+                <select
+                  value={corrRowSection}
+                  onChange={e => setCorrRowSection(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 bg-white"
+                >
+                  {CORR_SECTIONS.map(s => <option key={s.key} value={s.key}>{s.key === "S2_ORDINAL" ? "S2 – Ordinal variables" : s.key + " – " + s.label.split(" – ")[1]}</option>)}
+                </select>
+              </div>
+              <span className="text-slate-300 font-bold">×</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-500 w-8">Cols</span>
+                <select
+                  value={corrColSection}
+                  onChange={e => setCorrColSection(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 bg-white"
+                >
+                  {CORR_SECTIONS.map(s => <option key={s.key} value={s.key}>{s.key === "S2_ORDINAL" ? "S2 – Ordinal variables" : s.key + " – " + s.label.split(" – ")[1]}</option>)}
+                </select>
+              </div>
+              {corrRowSection !== corrColSection && (
+                <button
+                  onClick={() => { setCorrRowSection("S3"); setCorrColSection("S3"); }}
+                  className="text-xs text-slate-400 hover:text-slate-600 underline ml-2"
+                >
+                  Reset to within-section
+                </button>
+              )}
+            </div>
+
+<CorrMatrixDisplay rowSection={corrRowSection} colSection={corrColSection} />
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
 </body>
 </html>
